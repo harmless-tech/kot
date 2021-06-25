@@ -1,0 +1,7 @@
+Kot Spec - Version 0 - Stage Alpha
+
+- Starter Tags
+- Comments
+- Types
+- Extensions
+- Data

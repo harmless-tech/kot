@@ -1,0 +1,29 @@
+#INIT KOT_SPEC_0 KOT_EXT_ARR KOT_EXT_OBJ
+#NAME Example Program
+#VERSION 0
+#AUTHORS harmless-tech, Harmless_Tech
+#WEB https://harmless.tech/languages/kot
+#GIT https://github.com/harmless-tech/kot
+#ISSUES https://github.com/harmless-tech/kot/issues
+
+// A # would be invalid here due to the empty line.
+
+// This is a one line comment.
+/*
+ * This is a multiline comment.
+ */
+
+var hey: i32 = 0
+val TEST: u64 = 0
+val T_STRING: str = "This
+is
+a
+string
+with
+"newlines"
+after
+each
+word
+"
+var str_comment: string = "// There can be no comments in a string.
+As such this comment is ignored."
