@@ -1,19 +1,20 @@
-#INIT KOT_SPEC_0 KOT_EXT_ARR KOT_EXT_OBJ
+KOT_SPEC_0
 #NAME Example Program
-#VERSION 0
-#AUTHORS harmless-tech, Harmless_Tech
+#VERSION 0.0.1
+#AUTHORS harmless-tech (Harmless_Tech)
 #WEB https://harmless.tech/languages/kot
 #GIT https://github.com/harmless-tech/kot
 #ISSUES https://github.com/harmless-tech/kot/issues
 
 // A # would be invalid here due to the empty line.
+// The first lines after the first line will have a metadata section. Anything in this section will be put into the .kob file as metadata.
 
 // This is a one line comment.
 /*
  * This is a multiline comment.
  */
 
-var hey: i32 = 0
+var hey: int = 0
 val TEST: u64 = 0
 val T_STRING: str = "This
 is
@@ -23,7 +24,15 @@ with
 "newlines"
 after
 each
-word
+word.
 "
 var str_comment: string = "// There can be no comments in a string.
 As such this comment is ignored."
+
+val HEY: object = {
+    var value: string = "Hey!"
+    var val2: str[] = ["", ""]
+}
+
+var arr: int[] = [0, 1, 2, 3, 4, 5,
+    6, 7, 8, 1 + 1]

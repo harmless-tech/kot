@@ -1,7 +1,55 @@
 Kot Spec - Version 0 - Stage Alpha
 
+TODO Allow adding of variables, currently only constants exist.
+
 - Starter Tags
 - Comments
+    // = Single line.
+    /* */ = Multi-line. (You cannot have a multi-line comment within another multi-line comment.)
+
 - Types
-- Extensions
-- Data
+    Primitive:
+        Only 64 bit numbers.
+        Number Type:
+            - char, chr (4 bytes big)
+            - int, i64
+            - uint, u64
+            - float, f64
+            - byte, u8
+        Other:
+            - string, str
+            - boolean, bool
+
+    Array:
+        Cannot have an array of objects.
+        - Primitive[]
+
+    Object:
+        - object, obj
+
+- Operators
+    THERE IS NO CASTING.
+    - .. = Append Primitives together into a string.
+    - !, &&, || = Logic for booleans.
+    - +, -, *, / = (byte -> char -> i64 -> u64 -> f64) Casts to biggest type then does arithmetic.
+    - % = Casts a number type to u64 then evaluates.
+    - ==, !=, >, <, >=, <=  = (byte -> char -> i64 -> u64 -> f64) Casts to biggest type then compares.
+    - &, |, ^, ~, << u64, >> u64 = Does a bitwise operation on a number type.
+
+- File Extensions and names
+    Kot data files = *.kot
+    Kot binary files = *.kob
+    Kot build file = kot.build
+    Kot cache file = kot.cache
+    Kot build file cache = kot.build.cache
+
+- Compiled File
+    Compiled files will hold kot data in binary and checked form. It also evaluates all experessions.
+
+- Build File
+    The build file will hold all *.kot files to be compiled.
+    It will also allow each input file to be mapped to another location, as well as allowing the build folder to be moved.
+    Builds using a build file will evaluate all paths from the location of the build file.
+
+- Cache File
+    The cache file just keeps a hash each *.kot file and the build file to make builds faster.

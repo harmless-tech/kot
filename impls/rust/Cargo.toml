@@ -1,8 +1,26 @@
 [package]
-name = "rust"
-version = "0.1.0"
+name = "kot-bin"
+version = "0.0.1"
 edition = "2018"
+authors = ["harmless-tech"]
+description = "A strictly typed format for storing and reading data. Binary for compiling and reading kot files."
+readme = "../../README.md"
+homepage = "TODO URL"
+repository = "https://github.com/harmless-tech/kot"
+# license = "MIT License - Copyright (c) 2021 Harmless_Tech"
+license-file = "../../LICENSE"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4.14"
+kot = { path = "crates/kot" }
+kot_compiler = { path = "crates/kot_compiler" }
+
+[workspace]
+members = ["crates/*"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
