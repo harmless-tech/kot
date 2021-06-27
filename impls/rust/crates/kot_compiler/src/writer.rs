@@ -1,97 +1,88 @@
 #![allow(dead_code)]
 
-use std::{fs::File, io::Write};
-
-pub fn error(result: std::io::Result<()>) -> Result<(), String> {
-    match result {
-        Ok(r) => Ok(r),
-        Err(r) => Err(r.to_string()),
-    }
-}
-
 // Writes a header of length + padding.
-pub fn header(file: &mut File, header: &str, padding: usize) -> Result<(), String> {
+pub fn header(file: &mut Vec<u8>, header: &str, padding: usize) {
     let buffer = &[header.as_bytes(), &vec![0_u8; padding]].concat();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
 //<editor-fold desc="Primitive writing functions">
 
-fn write_char(file: &mut File, data: char) -> Result<(), String> {
+fn write_char(file: &mut Vec<u8>, data: char) {
     let buffer = &(data as u32).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_string(file: &mut File, data: &String) -> Result<(), String> {
+fn write_string(file: &mut Vec<u8>, data: &String) {
     let buffer = data.as_bytes();
 
-    write_u64(file, data.len() as u64)?;
-    error(file.by_ref().write_all(buffer))
+    write_u64(file, data.len() as u64);
+    file.extend_from_slice(buffer);
 }
 
-fn write_i8(file: &mut File, data: i8) -> Result<(), String> {
+fn write_i8(file: &mut Vec<u8>, data: i8) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_i16(file: &mut File, data: i16) -> Result<(), String> {
+fn write_i16(file: &mut Vec<u8>, data: i16) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_i32(file: &mut File, data: i32) -> Result<(), String> {
+fn write_i32(file: &mut Vec<u8>, data: i32) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_i64(file: &mut File, data: i64) -> Result<(), String> {
+fn write_i64(file: &mut Vec<u8>, data: i64) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_i128(file: &mut File, data: i128) -> Result<(), String> {
+fn write_i128(file: &mut Vec<u8>, data: i128) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_u8(file: &mut File, data: u8) -> Result<(), String> {
+fn write_u8(file: &mut Vec<u8>, data: u8) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_u16(file: &mut File, data: u16) -> Result<(), String> {
+fn write_u16(file: &mut Vec<u8>, data: u16) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_u32(file: &mut File, data: u32) -> Result<(), String> {
+fn write_u32(file: &mut Vec<u8>, data: u32) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_u64(file: &mut File, data: u64) -> Result<(), String> {
+fn write_u64(file: &mut Vec<u8>, data: u64) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_u128(file: &mut File, data: u128) -> Result<(), String> {
+fn write_u128(file: &mut Vec<u8>, data: u128) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_f32(file: &mut File, data: f32) -> Result<(), String> {
+fn write_f32(file: &mut Vec<u8>, data: f32) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_f64(file: &mut File, data: f64) -> Result<(), String> {
+fn write_f64(file: &mut Vec<u8>, data: f64) {
     let buffer = &(data).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
-fn write_bool(file: &mut File, data: bool) -> Result<(), String> {
+fn write_bool(file: &mut Vec<u8>, data: bool) {
     let buffer = &(data as u8).to_be_bytes();
-    error(file.by_ref().write_all(buffer))
+    file.extend_from_slice(buffer);
 }
 
 //</editor-fold>

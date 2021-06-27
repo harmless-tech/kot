@@ -6,7 +6,6 @@ KOT_SPEC_0
 #GIT https://github.com/harmless-tech/kot
 #ISSUES https://github.com/harmless-tech/kot/issues
 
-// A # would be invalid here due to the empty line.
 // The first lines after the first line will have a metadata section. Anything in this section will be put into the .kob file as metadata.
 
 // This is a one line comment.
@@ -22,6 +21,10 @@ val pow: int = fun pow(hey, 2)
 val fpow: float = fun pow(1.5, 100.1)
 val upow: uint = fun pow(TEST, 0)
 val f: string = fun format("Num: {}", 0)
+
+val tup: (int, str) = (0, "string!")
+
+#META Hello! Am data.
 
 // \n and \t not converted in strings.
 val T_STRING: str = "This
@@ -48,3 +51,5 @@ var arr: int[] = [0, 1, 2, 3, 4, 5,
     6, 7, 8, 1 + 1]
 
 val add: int = 1 + 2.0 // Converted to f64 then back to i64
+
+val take: (str, str) = (tup.1, HEY.val2[0])

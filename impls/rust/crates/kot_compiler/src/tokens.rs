@@ -6,16 +6,14 @@ pub enum Token {
     Equal,
 
     TypeChar,
-    TypeInt64, // Converted from ValueInt or ValueNegativeInt.
-    TypeUInt64, // Converted from ValueInt.
-    TypeFloat64, // Converted from ValueInt, ValueNegativeInt, or ValueFloat.
-    TypeByte, // Converted from ValueInt.
+    TypeInt64,   // Converted from ValueNumber.
+    TypeUInt64,  // Converted from ValueNumber.
+    TypeFloat64, // Converted from ValueNumber.
+    TypeByte,    // Converted from ValueNumber.
     TypeString,
     TypeBoolean,
-    ValueChar(char),
-    ValueInt(u64),
-    ValueNegativeInt(i64),
-    ValueFloat(f64),
+    ValueChar(String), // ValueChar and ValueNumber have extra requirements to be checked by the parser.
+    ValueNumber(String),
     ValueString(String),
     ValueBoolean(bool),
 
@@ -52,9 +50,5 @@ pub enum Token {
     BitwiseXor,
     BitwiseNegate,
     BitwiseShiftLeft,
-    BitwiseShiftRight
-}
-
-pub enum TokenValue {
-
+    BitwiseShiftRight,
 }

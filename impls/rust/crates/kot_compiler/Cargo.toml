@@ -18,4 +18,3 @@ kot = { path = "../kot" }
 regex = "1.5.4"
 lazy-regex = "2.2.1"
 aho-corasick = "0.7.18"
-brotli = "3.3.0"

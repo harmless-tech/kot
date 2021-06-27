@@ -1,0 +1,9 @@
+KOT_SPEC_0 KOT_BUILD_FILE
+
+val SRC: str = "./" // Current directory is root folder for getting input files.
+val FILES: str[] = [ // Appends SRC to front.
+    "example.kot"
+]
+
+// Can be overridden by console.
+val COMPRESS: bool = false

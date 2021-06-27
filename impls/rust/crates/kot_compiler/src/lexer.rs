@@ -14,7 +14,7 @@ fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, 
 pub fn remove_comments(file_name: &str, contents: String) -> Result<String, String> {
     let mut lines: Vec<String> = contents
         .split("\n")
-        .map(|s| String::from(s.trim()))
+        .map(|s| s.to_string())
         .collect();
 
     // Remove /* */ comments.
@@ -114,7 +114,7 @@ pub fn remove_comments(file_name: &str, contents: String) -> Result<String, Stri
                 comment_first_slash = false;
             }
             else if chr == '/' {
-                if !in_quotes && comment_first_slash {
+                if !in_quotes && comment_first_slash && !line.starts_with("#") {
                     loc = (i as i32) - 1;
                     break;
                 }
@@ -135,9 +135,79 @@ pub fn remove_comments(file_name: &str, contents: String) -> Result<String, Stri
     Ok(lines.join("\n"))
 }
 
+pub fn pre_process(file_name: &str, contents: String) -> Result<(String, Vec<String>, String), String> {
+    let mut lines: Vec<String> = contents
+        .split("\n")
+        .map(|s| s.to_string())
+        .collect();
+
+    let mut spec_vec = Vec::new();
+    if let Some(first_line) = lines.get_mut(0) {
+        spec_vec = first_line.split_whitespace().map(|s| s.to_string()).collect();
+        first_line.drain(0..first_line.len());
+    }
+    else {
+        return err_message(file_name, 0, "The first line does not exist.");
+    }
+
+    if !spec_vec.contains(&kot::KOT_VERSION.to_string()) {
+        return err_message(file_name, 0, "KOT_SPEC_# is missing or does not match with the spec for this compiler.");
+    }
+
+    let mut metadata = Vec::new();
+    for line in lines.iter_mut() {
+        if line.starts_with("#") {
+            metadata.push(line.drain(1..line.len()).collect::<String>());
+            line.drain(0..1);
+        }
+    }
+
+    Ok((lines.join("\n"), spec_vec, metadata.join("\n")))
+}
+
 //TODO Should this use borrowing instead for contents?
 pub fn tokenize(contents: String) -> Result<(), String> {
     Ok(())
+}
+
+//TODO Better tests.
+#[cfg(test)]
+mod tests {
+    use std::fs::File;
+    use std::io::Read;
+    use crate::lexer::{remove_comments, pre_process};
+
+    #[test]
+    fn test_example_file() {
+        let mut f_str = String::new();
+        let mut file = File::open("../../../../specs/0/example.kot").unwrap();
+        file.read_to_string(&mut f_str);
+
+        let mut contents = remove_comments("example.kot", f_str).unwrap();
+        println!("\nNo Comments:\n{}", contents);
+
+        let mut contents = pre_process("example.kot", contents).unwrap();
+        println!("\nPre-Process:\n{}", contents.0);
+        println!("\nPre-Process Specs:\n{:?}", contents.1);
+        println!("\nPre-Process Metadata:\n{}", contents.2);
+        println!();
+    }
+
+    #[test]
+    fn test_example_build_file() {
+        let mut f_str = String::new();
+        let mut file = File::open("../../../../specs/0/kot.build").unwrap();
+        file.read_to_string(&mut f_str);
+
+        let mut contents = remove_comments("kot.build", f_str).unwrap();
+        println!("\nNo Comments:\n{}", contents);
+
+        let mut contents = pre_process("kot.build", contents).unwrap();
+        println!("\nPre-Process:\n{}", contents.0);
+        println!("\nPre-Process Specs:\n{:?}", contents.1);
+        println!("\nPre-Process Metadata:\n{}", contents.2);
+        println!();
+    }
 }
 
 //<editor-fold desc="OLD">

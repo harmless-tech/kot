@@ -61,6 +61,7 @@ version = "0.0.1"
 name = "kot-bin"
 version = "0.0.1"
 dependencies = [
+ "brotli",
  "kot",
  "kot_compiler",
  "log",
@@ -71,7 +72,6 @@ name = "kot_compiler"
 version = "0.0.1"
 dependencies = [
  "aho-corasick",
- "brotli",
  "kot",
  "lazy-regex",
  "log",

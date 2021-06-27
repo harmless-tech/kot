@@ -2,14 +2,18 @@ Kot Spec - Version 0 - Stage Alpha
 
 TODO Allow adding of variables, currently only constants exist.
 
-- Starter Tags
+- Kot File
+    First line must have the kot spec version (KOT_SPEC_0). For build files you also must include KOT_BUILD_FILE.
+    Lines after the first marked with # at the start will have their data put into the metadata of the file.
+    Lines after start the data file.
+
 - Comments
     // = Single line.
     /* */ = Multi-line. (You cannot have a multi-line comment within another multi-line comment.)
 
 - Types
-    val is used to mark a data type as unchangable.
-    var is used to mark a data type as changable. (TODO Might remove var and only have val)
+    val is used to mark a data type as unchangable. (TODO Might get rid of val... or allow it to be excluded.)
+    var is used to mark a data type as changable. (TODO Might remove var and only have val.)
     Primitive:
         Only 64 bit numbers.
         Number Type:
@@ -42,7 +46,7 @@ TODO Allow adding of variables, currently only constants exist.
     You cannot make your own functions.
     To call a function use: fun function_name(args)
     Standard:
-        - pow(number1, number2) -> number = (byte -> char -> i64 -> u64 -> f64) Casts to biggest type then does number1 ^ number2.
+        - pow(Number1, Number2) -> number = (byte -> char -> i64 -> u64 -> f64) Casts to biggest type then does Number1 ^ Number2.
         - format(string, Primitive...) -> string = Puts Primitives into {}, located in the format string.
 
 - File Extensions and names
