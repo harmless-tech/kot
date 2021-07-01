@@ -38,7 +38,7 @@ TODO Allow adding of variables, currently only constants exist.
     (Like Rust's raw strings.)
 
 - Operators
-    THERE IS NO CASTING.
+    THERE IS NO CASTING. (Some types can be auto casted into other types though.)
     - .. = Append Primitives together into a string.
     - !, &&, || = Logic for booleans.
     - +, -, *, / = (byte -> char -> i64 -> u64 -> f64) Casts to biggest type then does arithmetic.

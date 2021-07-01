@@ -1,10 +1,10 @@
 #[derive(Debug)]
 pub enum Token {
     Val,
-    ID(String),
     Colon,
-    Equal,
+    Assign,
     Comma,
+    QuestionMark,
 
     LeftParentheses,
     RightParentheses,
@@ -20,8 +20,8 @@ pub enum Token {
     TypeByte,    // Converted from ValueNumber.
     TypeString,
     TypeBoolean,
-    TypeObject,
-    // An array will have brackets after the type.
+    TypeObject, // An array will have brackets after the type and therefore does not need its own type.
+
     Function,
     Concat,
 
@@ -33,7 +33,7 @@ pub enum Token {
     Multiply,
     Divide,
     Modulus,
-    DoubleEquals,
+    Equals,
     NotEquals,
     Greater,
     Less,
@@ -46,8 +46,10 @@ pub enum Token {
     BitwiseShiftLeft,
     BitwiseShiftRight,
 
-    ValueChar(String), // ValueChar and ValueNumber have extra requirements to be checked by the parser later on.
-    ValueNumber(String),
+    ValueChar(char),
+    ValueNumber(String), // ValueNumber have extra requirements to be checked by the parser later on.
     ValueString(String),
     ValueBoolean(bool),
+
+    ID(String),
 }

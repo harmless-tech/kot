@@ -1,3 +1,5 @@
+use crate::tokens::Token;
+use lazy_regex::{regex, regex_captures};
 use log::error;
 use std::process::exit;
 
@@ -12,10 +14,7 @@ fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, 
 
 //TODO Should this use borrowing instead for contents?
 pub fn remove_comments(file_name: &str, contents: String) -> Result<String, String> {
-    let mut lines: Vec<String> = contents
-        .split("\n")
-        .map(|s| s.to_string())
-        .collect();
+    let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
     // Remove /* */ comments.
     let mut in_quotes = false;
@@ -135,15 +134,18 @@ pub fn remove_comments(file_name: &str, contents: String) -> Result<String, Stri
     Ok(lines.join("\n"))
 }
 
-pub fn pre_process(file_name: &str, contents: String) -> Result<(String, Vec<String>, String), String> {
-    let mut lines: Vec<String> = contents
-        .split("\n")
-        .map(|s| s.to_string())
-        .collect();
+pub fn pre_process(
+    file_name: &str,
+    contents: String,
+) -> Result<(String, Vec<String>, String), String> {
+    let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
     let mut spec_vec = Vec::new();
     if let Some(first_line) = lines.get_mut(0) {
-        spec_vec = first_line.split_whitespace().map(|s| s.to_string()).collect();
+        spec_vec = first_line
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect();
         first_line.drain(0..first_line.len());
     }
     else {
@@ -151,7 +153,11 @@ pub fn pre_process(file_name: &str, contents: String) -> Result<(String, Vec<Str
     }
 
     if !spec_vec.contains(&kot::KOT_VERSION.to_string()) {
-        return err_message(file_name, 0, "KOT_SPEC_# is missing or does not match with the spec for this compiler.");
+        return err_message(
+            file_name,
+            0,
+            "KOT_SPEC_# is missing or does not match with the spec for this compiler.",
+        );
     }
 
     let mut metadata = Vec::new();
@@ -166,27 +172,137 @@ pub fn pre_process(file_name: &str, contents: String) -> Result<(String, Vec<Str
 }
 
 //TODO Should this use borrowing instead for contents?
-pub fn tokenize(contents: String) -> Result<(), String> {
-    Ok(())
+//TODO This should pass line number info to the parser.
+#[rustfmt::skip]
+pub fn tokenize(contents: String) -> Result<Vec<Token>, String> {
+    let mut token_list = Vec::new();
+    let mut index = 0_usize;
+
+    while index < contents.len() {
+        let s = &contents[index..contents.len()];
+
+        if regex!("^val").is_match(s) { token_list.push(Token::Val); index += 3; } // Val
+        else if regex!("^:").is_match(s) { token_list.push(Token::Colon); index += 1; } // Colon
+        else if regex!("^=").is_match(s) { token_list.push(Token::Assign); index += 1; } // Assign
+        else if regex!("^,").is_match(s) { token_list.push(Token::Comma); index += 1; } // Comma
+        else if regex!("^\\?").is_match(s) { token_list.push(Token::QuestionMark); index += 1; } // Question Mark
+
+        else if regex!("^\\(").is_match(s) { token_list.push(Token::LeftParentheses); index += 1; } // Left Parentheses
+        else if regex!("^\\)").is_match(s) { token_list.push(Token::RightParentheses); index += 1; } // Right Parentheses
+        else if regex!("^\\[").is_match(s) { token_list.push(Token::LeftBracket); index += 1; } // Left Bracket
+        else if regex!("^\\]").is_match(s) { token_list.push(Token::RightBracket); index += 1; } // Right Bracket
+        else if regex!("^\\{").is_match(s) { token_list.push(Token::LeftCurlyBrace); index += 1; } // Left Curly Brace
+        else if regex!("^}").is_match(s) { token_list.push(Token::RightCurlyBrace); index += 1; } // Right Curly Brace
+
+        else if regex!("^char").is_match(s) { token_list.push(Token::TypeChar); index += 4; } // Type Char
+        else if regex!("^chr").is_match(s) { token_list.push(Token::TypeChar); index += 3; } // Type Char
+        else if regex!("^int").is_match(s) { token_list.push(Token::TypeInt64); index += 3; } // Type Int
+        else if regex!("^i64").is_match(s) { token_list.push(Token::TypeInt64); index += 3; } // Type Int
+        else if regex!("^uint").is_match(s) { token_list.push(Token::TypeUInt64); index += 4; } // Type UInt
+        else if regex!("^u64").is_match(s) { token_list.push(Token::TypeUInt64); index += 3; } // Type UInt
+        else if regex!("^float").is_match(s) { token_list.push(Token::TypeFloat64); index += 5; } // Type Float
+        else if regex!("^f64").is_match(s) { token_list.push(Token::TypeFloat64); index += 3; } // Type Float
+        else if regex!("^byte").is_match(s) { token_list.push(Token::TypeByte); index += 4; } // Type Byte
+        else if regex!("^u8").is_match(s) { token_list.push(Token::TypeByte); index += 2; } // Type Byte
+        else if regex!("^string").is_match(s) { token_list.push(Token::TypeString); index += 6; } // Type String
+        else if regex!("^str").is_match(s) { token_list.push(Token::TypeString); index += 3; } // Type String
+        else if regex!("^boolean").is_match(s) { token_list.push(Token::TypeBoolean); index += 7; } // Type Boolean
+        else if regex!("^bool").is_match(s) { token_list.push(Token::TypeBoolean); index += 4; } // Type Boolean
+        else if regex!("^object").is_match(s) { token_list.push(Token::TypeObject); index += 6; } // Type Object
+        else if regex!("^obj").is_match(s) { token_list.push(Token::TypeObject); index += 3; } // Type Object
+
+        else if regex!("^fun").is_match(s) { token_list.push(Token::Function); index += 3; } // Function
+        else if regex!("^..").is_match(s) { token_list.push(Token::Concat); index += 2; } // Concat
+
+        else if regex!("^![^=]").is_match(s) { token_list.push(Token::Negate); index += 1; } // Negate
+        else if regex!("^&&").is_match(s) { token_list.push(Token::And); index += 2; } // And
+        else if regex!("^||").is_match(s) { token_list.push(Token::Or); index += 2; } // Or
+        else if regex!("^\\+").is_match(s) { token_list.push(Token::Plus); index += 1; } // Plus
+        else if regex!("^-[\\s]+").is_match(s) { token_list.push(Token::Minus); index += 1; } // Minus
+        else if regex!("^\\*").is_match(s) { token_list.push(Token::Multiply); index += 1; } // Multiply
+        else if regex!("^/").is_match(s) { token_list.push(Token::Divide); index += 1; } // Divide
+        else if regex!("^%").is_match(s) { token_list.push(Token::Modulus); index += 1; } // Modulus
+        else if regex!("^==").is_match(s) { token_list.push(Token::Equals); index += 2; } // Equals
+        else if regex!("^!=").is_match(s) { token_list.push(Token::NotEquals); index += 2; } // Not Equals
+        else if regex!("^>[^=]").is_match(s) { token_list.push(Token::Greater); index += 1; } // Greater
+        else if regex!("^<[^=]").is_match(s) { token_list.push(Token::Less); index += 1; } // Less
+        else if regex!("^>=").is_match(s) { token_list.push(Token::GreaterEqual); index += 2; } // Greater Equal
+        else if regex!("^<=").is_match(s) { token_list.push(Token::LessEqual); index += 2; } // Less Equal
+
+        else if regex!("^&").is_match(s) { token_list.push(Token::BitwiseAnd); index += 1; } // Bitwise And
+        else if regex!("^|").is_match(s) { token_list.push(Token::BitwiseOr); index += 1; } // Bitwise Or
+        else if regex!("^\\^").is_match(s) { token_list.push(Token::BitwiseXor); index += 1; } // Bitwise Xor
+        else if regex!("^~").is_match(s) { token_list.push(Token::BitwiseNegate); index += 1; } // Bitwise Negate
+        else if regex!("^<<").is_match(s) { token_list.push(Token::BitwiseShiftLeft); index += 1; } // Bitwise Shift Left
+        else if regex!("^>>").is_match(s) { token_list.push(Token::BitwiseShiftRight); index += 1; } // Bitwise Shift Right
+
+        else if regex!("^'").is_match(s) { // Value Char
+            token_list.push(lex_char(s, &mut index));
+        }
+        else if regex!("").is_match(s) {} //TODO Finish
+        else if regex!("").is_match(s) {}
+
+        else if regex!("^[\\D\\w]{1}[\\w]*").is_match(s) { // ID
+            //TODO Test if this works!!!!
+            //TODO Move up regex_captures.
+            let cap = regex_captures!("^[\\D\\w]{1}[\\w]*", s).unwrap();
+            //println!("CAP: {}", cap);
+            index += cap.len();
+        }
+        else { index += 1; }
+    }
+
+    Ok(token_list)
+}
+
+#[rustfmt::skip]
+pub fn lex_char(contents: &str, index: &mut usize) -> Token {
+    if contents.starts_with("\'\'\'") { *index += 3; Token::ValueChar('\'') }
+    else if contents.starts_with("\'\\n\'") { *index += 4; Token::ValueChar('\n') }
+    else if contents.starts_with("\'\\t\'") { *index += 4; Token::ValueChar('\t') }
+    else { *index += 3; Token::ValueChar(contents.chars().nth(1).unwrap()) }
+}
+
+pub fn lex_string(contents: &String, index: &mut usize) -> Result<Token, String> {
+    unimplemented!();
 }
 
 //TODO Better tests.
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-    use std::io::Read;
-    use crate::lexer::{remove_comments, pre_process};
+    use crate::lexer::{pre_process, remove_comments, tokenize};
+    use std::{fs::File, io::Read};
 
     #[test]
     fn test_example_file() {
         let mut f_str = String::new();
         let mut file = File::open("../../../../specs/0/example.kot").unwrap();
-        file.read_to_string(&mut f_str);
+        file.read_to_string(&mut f_str).unwrap();
 
         let mut contents = remove_comments("example.kot", f_str).unwrap();
         println!("\nNo Comments:\n{}", contents);
 
         let mut contents = pre_process("example.kot", contents).unwrap();
+        println!("\nPre-Process:\n{}", contents.0);
+        println!("\nPre-Process Specs:\n{:?}", contents.1);
+        println!("\nPre-Process Metadata:\n{}", contents.2);
+        println!();
+
+        println!("VAL VAL");
+        let t_list = tokenize(contents.0).unwrap();
+        println!("Tokens: {:?}", t_list);
+    }
+
+    #[test]
+    fn test_example_no_val_file() {
+        let mut f_str = String::new();
+        let mut file = File::open("../../../../specs/0/example_noval.kot").unwrap();
+        file.read_to_string(&mut f_str).unwrap();
+
+        let mut contents = remove_comments("example_noval.kot", f_str).unwrap();
+        println!("\nNo Comments:\n{}", contents);
+
+        let mut contents = pre_process("example_noval.kot", contents).unwrap();
         println!("\nPre-Process:\n{}", contents.0);
         println!("\nPre-Process Specs:\n{:?}", contents.1);
         println!("\nPre-Process Metadata:\n{}", contents.2);
@@ -220,7 +336,7 @@ mod tests {
 //     imports.push(String::from(file_name));
 //
 //     for (index, line) in lines.iter_mut().enumerate() {
-//         if line.starts_with("#BUILD")
+//         if line.starts_with("BUILD")
 //             || line.starts_with("#INFO")
 //             || line.starts_with("#REQUIRE")
 //             || line.starts_with("#IMPORT")
