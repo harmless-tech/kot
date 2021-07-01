@@ -1,0 +1,59 @@
+KOT_SPEC_0
+#NAME Example Program (No Val)
+#VERSION 0.0.1
+#AUTHORS harmless-tech (Harmless_Tech)
+#WEBSITE https://harmless.tech/languages/kot
+#GIT https://github.com/harmless-tech/kot
+#ISSUES https://github.com/harmless-tech/kot/issues
+
+// The first lines after the first line will have a metadata section. Anything in this section will be put into the .kob file as metadata.
+
+// This is a one line comment.
+/*
+ * This is a multiline comment.
+ */
+
+hey: int = 0
+TEST: u64 = 0
+
+tern: bool = true ? true : false
+pow: int = fun pow(hey, 2)
+fpow: float = fun pow(1.5, 100.1)
+upow: uint = fun pow(TEST, 0)
+f: string = fun format("Num: {}", 0)
+
+tup: (int, str) = (0, "string!")
+
+#META Hello! Am data.
+
+// \n and \t not converted in strings.
+// All strings are considered raw.
+T_STRING: str = #"This
+is
+a
+string
+with
+"newlines"
+after
+each
+word.
+"#
+str_comment: string = "// There can be no comments in a string.
+As such this comment is ignored."
+
+sss: str = ###"val sss: str = ##"val sss: str = ##""####"##"###
+ss1: str = ##""#"##
+
+newline: chr = '\n' // Only \n and \t converted.
+
+HEY: object = {
+    value: string = "Hey!"
+    val2: str[] = ["", ""]
+}
+
+arr: int[] = [0, 1, 2, 3, 4, 5,
+    6, 7, 8, 1 + 1]
+
+add: int = 1 + 2.0 // Converted to f64 then back to i64
+
+take: (str, str) = (tup.1, HEY.val2[0])

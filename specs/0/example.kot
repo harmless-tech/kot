@@ -2,7 +2,7 @@ KOT_SPEC_0
 #NAME Example Program
 #VERSION 0.0.1
 #AUTHORS harmless-tech (Harmless_Tech)
-#WEB https://harmless.tech/languages/kot
+#WEBSITE https://harmless.tech/languages/kot
 #GIT https://github.com/harmless-tech/kot
 #ISSUES https://github.com/harmless-tech/kot/issues
 
@@ -27,7 +27,8 @@ val tup: (int, str) = (0, "string!")
 #META Hello! Am data.
 
 // \n and \t not converted in strings.
-val T_STRING: str = "This
+// All strings are considered raw.
+val T_STRING: str = #"This
 is
 a
 string
@@ -36,18 +37,21 @@ with
 after
 each
 word.
-"
-var str_comment: string = "// There can be no comments in a string.
+"#
+val str_comment: string = "// There can be no comments in a string.
 As such this comment is ignored."
+
+val sss: str = ###"val sss: str = ##"val sss: str = ##""####"##"###
+val ss1: str = ##""#"##
 
 val newline: chr = '\n' // Only \n and \t converted.
 
 val HEY: object = {
-    var value: string = "Hey!"
-    var val2: str[] = ["", ""]
+    val value: string = "Hey!"
+    val val2: str[] = ["", ""]
 }
 
-var arr: int[] = [0, 1, 2, 3, 4, 5,
+val arr: int[] = [0, 1, 2, 3, 4, 5,
     6, 7, 8, 1 + 1]
 
 val add: int = 1 + 2.0 // Converted to f64 then back to i64

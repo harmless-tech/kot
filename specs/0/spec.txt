@@ -13,7 +13,6 @@ TODO Allow adding of variables, currently only constants exist.
 
 - Types
     val is used to mark a data type as unchangable. (TODO Might get rid of val... or allow it to be excluded.)
-    var is used to mark a data type as changable. (TODO Might remove var and only have val.)
     Primitive:
         Only 64 bit numbers.
         Number Type:
@@ -32,6 +31,11 @@ TODO Allow adding of variables, currently only constants exist.
 
     Object:
         - object, obj
+
+- Strings
+    All strings are treated as raw strings.
+    Using the same number of # before the first " and after the last ", allows the contents of the string to be imported correctly.
+    (Like Rust's raw strings.)
 
 - Operators
     THERE IS NO CASTING.
