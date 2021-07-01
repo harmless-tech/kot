@@ -1,9 +1,17 @@
+#[derive(Debug)]
 pub enum Token {
-    Var,
     Val,
     ID(String),
     Colon,
     Equal,
+    Comma,
+
+    LeftParentheses,
+    RightParentheses,
+    LeftBracket,
+    RightBracket,
+    LeftCurlyBrace,
+    RightCurlyBrace,
 
     TypeChar,
     TypeInt64,   // Converted from ValueNumber.
@@ -12,25 +20,11 @@ pub enum Token {
     TypeByte,    // Converted from ValueNumber.
     TypeString,
     TypeBoolean,
-    ValueChar(String), // ValueChar and ValueNumber have extra requirements to be checked by the parser.
-    ValueNumber(String),
-    ValueString(String),
-    ValueBoolean(bool),
-
-    TypeExtArray,
-    LeftBracket,
-    RightBracket,
-    Comma,
-
     TypeObject,
-    LeftCurlyBrace,
-    RightCurlyBrace,
-
+    // An array will have brackets after the type.
     Function,
-    LeftParentheses,
-    RightParentheses,
-
     Concat,
+
     Negate,
     And,
     Or,
@@ -51,4 +45,9 @@ pub enum Token {
     BitwiseNegate,
     BitwiseShiftLeft,
     BitwiseShiftRight,
+
+    ValueChar(String), // ValueChar and ValueNumber have extra requirements to be checked by the parser later on.
+    ValueNumber(String),
+    ValueString(String),
+    ValueBoolean(bool),
 }

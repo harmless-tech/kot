@@ -71,11 +71,9 @@ dependencies = [
 name = "kot_compiler"
 version = "0.0.1"
 dependencies = [
- "aho-corasick",
  "kot",
  "lazy-regex",
  "log",
- "regex",
 ]
 
 [[package]]

@@ -15,6 +15,6 @@ license-file = "../../../../LICENSE"
 [dependencies]
 log = "0.4.14"
 kot = { path = "../kot" }
-regex = "1.5.4"
+#regex = "1.5.4"
 lazy-regex = "2.2.1"
-aho-corasick = "0.7.18"
+#aho-corasick = "0.7.18"
