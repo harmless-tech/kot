@@ -1,9 +1,13 @@
 KOT_SPEC_0 KOT_BUILD_FILE
 
-val SRC: str = "./" // Current directory is root folder for getting input files.
-val FILES: str[] = [ // Appends SRC to front.
-    "example.kot"
-]
+# Build file only has # comments.
 
-// Can be overridden by console.
-val COMPRESS: bool = false
+[SRC]
+./
+
+[COMPRESS]
+true
+
+[INPUT]
+example.kot
+example_noval.kot => opt/example.kob # Optionally you can map the file name and location to somewhere else.

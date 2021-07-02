@@ -38,7 +38,7 @@ after
 each
 word.
 "#
-str_comment: string = "// There can be no comments in a string.
+str_comment: string = "// There can be comments in a string.
 As such this comment is ignored."
 
 sss: str = ###"val sss: str = ##"val sss: str = ##""####"##"###

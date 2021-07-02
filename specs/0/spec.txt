@@ -3,13 +3,18 @@ Kot Spec - Version 0 - Stage Alpha
 TODO Allow adding of variables, currently only constants exist.
 
 - Kot File
-    First line must have the kot spec version (KOT_SPEC_0). For build files you also must include KOT_BUILD_FILE.
+    First line must have the kot spec version (KOT_SPEC_0).
     Lines after the first marked with # at the start will have their data put into the metadata of the file.
     Lines after start the data file.
+
+- Kot Build File
+    First line must have the kot spec version (KOT_SPEC_0) and you also must include KOT_BUILD_FILE.
+    Data is listed as: [KEY]\n DATA
 
 - Comments
     // = Single line.
     /* */ = Multi-line. (You cannot have a multi-line comment within another multi-line comment.)
+    # = Build file single line.
 
 - Types
     val is used to mark a data type as unchangable. (TODO Might get rid of val... or allow it to be excluded.)
@@ -58,7 +63,6 @@ TODO Allow adding of variables, currently only constants exist.
     Kot binary files = *.kob
     Kot build file = kot.build
     Kot cache file = kot.cache
-    Kot build file cache = kot.build.cache
 
 - Compiled File
     Compiled files will hold kot data in binary and checked form. It also evaluates all experessions.
