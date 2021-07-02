@@ -1,3 +1,4 @@
+use crate::DEBUG_BUILD;
 use log::{info, warn, LevelFilter};
 use log4rs::{
     append::{console::ConsoleAppender, file::FileAppender},
@@ -5,7 +6,6 @@ use log4rs::{
     encode::pattern::PatternEncoder,
 };
 use std::fs::remove_file;
-use crate::DEBUG_BUILD;
 
 //TODO Allow for log path to be changed?
 static LOG_PATH: &str = "build/kot.log";
