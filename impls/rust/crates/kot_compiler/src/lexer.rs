@@ -1,7 +1,5 @@
 use crate::tokens::Token;
 use lazy_regex::{regex, regex_captures};
-use log::error;
-use std::process::exit;
 
 fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, String> {
     Err(format!(
@@ -13,7 +11,7 @@ fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, 
 }
 
 //TODO Should this use borrowing instead for contents?
-pub fn remove_comments(file_name: &str, contents: String) -> Result<String, String> {
+pub fn remove_comments(contents: String) -> String {
     let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
     let mut in_quotes = false;
@@ -21,7 +19,7 @@ pub fn remove_comments(file_name: &str, contents: String) -> Result<String, Stri
     let mut in_block_comment = false;
     let mut initial_block_loc = 0_usize;
 
-    for (line_index, line) in lines.iter_mut().enumerate() {
+    for line in lines.iter_mut() {
         if !line.starts_with("#") {
             let mut index = 0_usize;
             let mut block_start_line = false;
@@ -92,7 +90,7 @@ pub fn remove_comments(file_name: &str, contents: String) -> Result<String, Stri
         }
     }
 
-    Ok(lines.join("\n"))
+    lines.join("\n")
 }
 
 pub fn pre_process(
@@ -133,7 +131,7 @@ pub fn pre_process(
 }
 
 //TODO Should this use borrowing instead for contents?
-//TODO This should pass line number info to the parser.
+//TODO This should pass line number info to the parser, and make use of line info.
 #[rustfmt::skip]
 pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String> {
     let mut token_list = Vec::new();
@@ -207,9 +205,9 @@ pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String>
         else if regex!("^[#]*\"").is_match(s) { // Value String
             token_list.push(lex_string(file_name, s, &mut index)?);
         }
-        else if regex!("^(true|false)").is_match(s) { // Value Boolean
-            if s.starts_with("true") { Token::ValueBoolean(true); index += 4; }
-            else if s.starts_with("false") { Token::ValueBoolean(false); index += 5; }
+        else if let Some((_, cap)) = regex_captures!("^(true|false)", s) { // Value Boolean
+            if cap.eq("true") { token_list.push(Token::ValueBoolean(true)); }
+            else if cap.eq("false")  { token_list.push(Token::ValueBoolean(false)); }
             else {
                 err_message(file_name, usize::MAX,
                             format!(
@@ -218,12 +216,12 @@ pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String>
                             ).as_str()
                 )?;
             }
+
+            index += cap.len();
         }
-        else if regex!("^[^\\d\\s]{1}[\\w]*").is_match(s) { // ID
-            //TODO Test if this works!!!!
-            //TODO Move up regex_captures.
-            let cap = regex_captures!("^[^\\d\\s]{1}[\\w]*", s).unwrap();
-            //println!("CAP: {}", cap);
+
+        else if let Some(cap) = regex_captures!("^[^\\d\\s]{1}[\\w]*", s) { // ID
+            token_list.push(Token::ID(cap.to_string()));
             index += cap.len();
         }
         else { index += 1; }
@@ -257,10 +255,10 @@ mod tests {
         let mut file = File::open("../../../../specs/0/example.kot").unwrap();
         file.read_to_string(&mut f_str).unwrap();
 
-        let mut contents = remove_comments("example.kot", f_str).unwrap();
+        let contents = remove_comments(f_str);
         println!("\n\nNo Comments:\n\n{}", contents);
 
-        let mut contents = pre_process("example.kot", contents).unwrap();
+        let contents = pre_process("example.kot", contents).unwrap();
         println!("\n\nPre-Process:\n\n{}", contents.0);
         println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
         println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
@@ -277,10 +275,10 @@ mod tests {
         let mut file = File::open("../../../../specs/0/example_noval.kot").unwrap();
         file.read_to_string(&mut f_str).unwrap();
 
-        let mut contents = remove_comments("example_noval.kot", f_str).unwrap();
+        let contents = remove_comments(f_str);
         println!("\n\nNo Comments:\n\n{}", contents);
 
-        let mut contents = pre_process("example_noval.kot", contents).unwrap();
+        let contents = pre_process("example_noval.kot", contents).unwrap();
         println!("\n\nPre-Process:\n\n{}", contents.0);
         println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
         println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
