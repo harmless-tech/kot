@@ -13,122 +13,82 @@ fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, 
 }
 
 //TODO Should this use borrowing instead for contents?
-//TODO This is now broken thanks to the raw quote system.
 pub fn remove_comments(file_name: &str, contents: String) -> Result<String, String> {
     let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
-    // Remove /* */ comments.
     let mut in_quotes = false;
-    let mut comment_first_slash;
-    let mut comment_first_star;
+    let mut quote_size = 0_usize;
     let mut in_block_comment = false;
+    let mut initial_block_loc = 0_usize;
 
-    let mut index = 0;
-    while index < lines.len() {
-        let line = match lines.get_mut(index) {
-            Some(l) => l,
-            None => {
-                error!(
-                    "[FATAL] Lexer somehow left the lines vector range! (lexer::remove_comments())"
-                );
-                exit(-1);
-            }
-        };
+    for (line_index, line) in lines.iter_mut().enumerate() {
+        if !line.starts_with("#") {
+            let mut index = 0_usize;
+            let mut block_start_line = false;
 
-        let mut loc1 = -1_i32;
-        let mut loc2 = -1_i32;
+            while index < line.len() {
+                let s = &(line.clone())[index..line.len()];
 
-        comment_first_slash = false;
-        comment_first_star = false;
-
-        for (i, chr) in line.chars().enumerate() {
-            if chr == '"' {
-                in_quotes = !in_quotes;
-                comment_first_slash = false;
-                comment_first_star = false;
-            }
-            else if chr == '/' {
-                if !in_quotes && comment_first_star && in_block_comment {
-                    loc2 = (i as i32) + 1;
-                    in_block_comment = false;
+                if in_quotes {
+                    if let Some(cap) = regex_captures!("^\"#*", s) {
+                        // Exit string.
+                        if quote_size == cap.len() {
+                            in_quotes = false;
+                            index += quote_size;
+                        }
+                        else {
+                            index += cap.len();
+                        }
+                    }
+                    else {
+                        index += 1;
+                    }
                 }
-                else if !in_quotes && comment_first_star {
-                    return err_message(
-                        file_name,
-                        index,
-                        "There is a '*/' without a matching '/*'.",
-                    );
-                }
-                else if !in_quotes {
-                    comment_first_slash = true;
-                }
+                else if in_block_comment {
+                    if regex!("^\\*/").is_match(s) {
+                        // Exit block comment.
+                        in_block_comment = false;
+                        index += 2;
 
-                comment_first_star = false;
-            }
-            else if chr == '*' {
-                if !in_quotes && comment_first_slash && !in_block_comment {
-                    loc1 = (i as i32) - 1;
+                        if block_start_line {
+                            line.drain(initial_block_loc..index);
+                        }
+                        else {
+                            line.drain(0..index);
+                        }
+
+                        index = 0;
+                    }
+                    else {
+                        index += 1;
+                    }
+                }
+                else if let Some(cap) = regex_captures!("^#*\"", s) {
+                    // Enter string.
+                    in_quotes = true;
+                    quote_size = cap.len();
+                    index += cap.len();
+                }
+                else if regex!("^/\\*").is_match(s) {
+                    // Enter block comment.
                     in_block_comment = true;
+                    initial_block_loc = index;
+                    block_start_line = true;
+                    index += 2;
                 }
-                else if !in_quotes {
-                    comment_first_star = true;
+                else if regex!("^//").is_match(s) {
+                    // Remove one line comment.
+                    line.drain(index..line.len());
+                    // Do not change index.
                 }
-
-                comment_first_slash = false;
-            }
-            else {
-                comment_first_slash = false;
-                comment_first_star = false;
-            }
-        }
-
-        if loc1 >= 0 && loc2 >= 0 {
-            line.drain((loc1 as usize)..(loc2 as usize));
-            index -= 1;
-        }
-        else if loc1 >= 0 {
-            line.drain((loc1 as usize)..line.len());
-        }
-        else if loc2 >= 0 {
-            line.drain(0..(loc2 as usize));
-        }
-        else if in_block_comment {
-            line.drain(0..line.len());
-        }
-
-        index += 1;
-    }
-
-    // Remove // comments.
-    let mut in_quotes = false;
-    let mut comment_first_slash;
-
-    for line in lines.iter_mut() {
-        comment_first_slash = false;
-
-        let mut loc = -1_i32;
-
-        for (i, chr) in line.chars().enumerate() {
-            if chr == '"' {
-                in_quotes = !in_quotes;
-                comment_first_slash = false;
-            }
-            else if chr == '/' {
-                if !in_quotes && comment_first_slash && !line.starts_with("#") {
-                    loc = (i as i32) - 1;
-                    break;
-                }
-                else if !in_quotes {
-                    comment_first_slash = true;
+                else {
+                    index += 1;
                 }
             }
-            else {
-                comment_first_slash = false;
-            }
-        }
 
-        if loc >= 0 {
-            line.drain((loc as usize)..line.len());
+            if in_block_comment {
+                line.drain(0..line.len());
+            }
         }
     }
 
@@ -298,17 +258,17 @@ mod tests {
         file.read_to_string(&mut f_str).unwrap();
 
         let mut contents = remove_comments("example.kot", f_str).unwrap();
-        println!("\nNo Comments:\n{}", contents);
+        println!("\n\nNo Comments:\n\n{}", contents);
 
         let mut contents = pre_process("example.kot", contents).unwrap();
-        println!("\nPre-Process:\n{}", contents.0);
-        println!("\nPre-Process Specs:\n{:?}", contents.1);
-        println!("\nPre-Process Metadata:\n{}", contents.2);
+        println!("\n\nPre-Process:\n\n{}", contents.0);
+        println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
+        println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
         println!();
 
-        println!("VAL VAL");
+        println!("\n\nTokens: \n");
         let t_list = tokenize("example.kot", contents.0).unwrap();
-        println!("Tokens: {:?}", t_list);
+        println!("{:?}", t_list);
     }
 
     #[test]
@@ -318,28 +278,12 @@ mod tests {
         file.read_to_string(&mut f_str).unwrap();
 
         let mut contents = remove_comments("example_noval.kot", f_str).unwrap();
-        println!("\nNo Comments:\n{}", contents);
+        println!("\n\nNo Comments:\n\n{}", contents);
 
         let mut contents = pre_process("example_noval.kot", contents).unwrap();
-        println!("\nPre-Process:\n{}", contents.0);
-        println!("\nPre-Process Specs:\n{:?}", contents.1);
-        println!("\nPre-Process Metadata:\n{}", contents.2);
-        println!();
-    }
-
-    #[test]
-    fn test_example_build_file() {
-        let mut f_str = String::new();
-        let mut file = File::open("../../../../specs/0/kot.build").unwrap();
-        file.read_to_string(&mut f_str);
-
-        let mut contents = remove_comments("kot.build", f_str).unwrap();
-        println!("\nNo Comments:\n{}", contents);
-
-        let mut contents = pre_process("kot.build", contents).unwrap();
-        println!("\nPre-Process:\n{}", contents.0);
-        println!("\nPre-Process Specs:\n{:?}", contents.1);
-        println!("\nPre-Process Metadata:\n{}", contents.2);
+        println!("\n\nPre-Process:\n\n{}", contents.0);
+        println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
+        println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
         println!();
     }
 }
