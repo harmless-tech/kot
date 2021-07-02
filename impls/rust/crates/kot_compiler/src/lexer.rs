@@ -13,6 +13,7 @@ fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, 
 }
 
 //TODO Should this use borrowing instead for contents?
+//TODO This is now broken thanks to the raw quote system.
 pub fn remove_comments(file_name: &str, contents: String) -> Result<String, String> {
     let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
@@ -174,7 +175,7 @@ pub fn pre_process(
 //TODO Should this use borrowing instead for contents?
 //TODO This should pass line number info to the parser.
 #[rustfmt::skip]
-pub fn tokenize(contents: String) -> Result<Vec<Token>, String> {
+pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String> {
     let mut token_list = Vec::new();
     let mut index = 0_usize;
 
@@ -212,11 +213,11 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, String> {
         else if regex!("^obj").is_match(s) { token_list.push(Token::TypeObject); index += 3; } // Type Object
 
         else if regex!("^fun").is_match(s) { token_list.push(Token::Function); index += 3; } // Function
-        else if regex!("^..").is_match(s) { token_list.push(Token::Concat); index += 2; } // Concat
+        else if regex!("^\\.\\.").is_match(s) { token_list.push(Token::Concat); index += 2; } // Concat
 
         else if regex!("^![^=]").is_match(s) { token_list.push(Token::Negate); index += 1; } // Negate
         else if regex!("^&&").is_match(s) { token_list.push(Token::And); index += 2; } // And
-        else if regex!("^||").is_match(s) { token_list.push(Token::Or); index += 2; } // Or
+        else if regex!("^\\|\\|").is_match(s) { token_list.push(Token::Or); index += 2; } // Or
         else if regex!("^\\+").is_match(s) { token_list.push(Token::Plus); index += 1; } // Plus
         else if regex!("^-[\\s]+").is_match(s) { token_list.push(Token::Minus); index += 1; } // Minus
         else if regex!("^\\*").is_match(s) { token_list.push(Token::Multiply); index += 1; } // Multiply
@@ -230,22 +231,38 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, String> {
         else if regex!("^<=").is_match(s) { token_list.push(Token::LessEqual); index += 2; } // Less Equal
 
         else if regex!("^&").is_match(s) { token_list.push(Token::BitwiseAnd); index += 1; } // Bitwise And
-        else if regex!("^|").is_match(s) { token_list.push(Token::BitwiseOr); index += 1; } // Bitwise Or
+        else if regex!("^\\|").is_match(s) { token_list.push(Token::BitwiseOr); index += 1; } // Bitwise Or
         else if regex!("^\\^").is_match(s) { token_list.push(Token::BitwiseXor); index += 1; } // Bitwise Xor
         else if regex!("^~").is_match(s) { token_list.push(Token::BitwiseNegate); index += 1; } // Bitwise Negate
         else if regex!("^<<").is_match(s) { token_list.push(Token::BitwiseShiftLeft); index += 1; } // Bitwise Shift Left
         else if regex!("^>>").is_match(s) { token_list.push(Token::BitwiseShiftRight); index += 1; } // Bitwise Shift Right
 
-        else if regex!("^'").is_match(s) { // Value Char
-            token_list.push(lex_char(s, &mut index));
+        else if regex!("^\'").is_match(s) { // Value Char
+            token_list.push(lex_char(file_name, s, &mut index)?);
         }
-        else if regex!("").is_match(s) {} //TODO Finish
-        else if regex!("").is_match(s) {}
-
-        else if regex!("^[\\D\\w]{1}[\\w]*").is_match(s) { // ID
+        else if let Some(cap) = regex_captures!("^[\\d_]+[.]?[\\d_]*", s) { // Value Number
+            token_list.push(Token::ValueNumber(cap.to_string()));
+            index += cap.len();
+        }
+        else if regex!("^[#]*\"").is_match(s) { // Value String
+            token_list.push(lex_string(file_name, s, &mut index)?);
+        }
+        else if regex!("^(true|false)").is_match(s) { // Value Boolean
+            if s.starts_with("true") { Token::ValueBoolean(true); index += 4; }
+            else if s.starts_with("false") { Token::ValueBoolean(false); index += 5; }
+            else {
+                err_message(file_name, usize::MAX,
+                            format!(
+                                "Lexer failed to id boolean at index {}.",
+                                index
+                            ).as_str()
+                )?;
+            }
+        }
+        else if regex!("^[^\\d\\s]{1}[\\w]*").is_match(s) { // ID
             //TODO Test if this works!!!!
             //TODO Move up regex_captures.
-            let cap = regex_captures!("^[\\D\\w]{1}[\\w]*", s).unwrap();
+            let cap = regex_captures!("^[^\\d\\s]{1}[\\w]*", s).unwrap();
             //println!("CAP: {}", cap);
             index += cap.len();
         }
@@ -256,14 +273,15 @@ pub fn tokenize(contents: String) -> Result<Vec<Token>, String> {
 }
 
 #[rustfmt::skip]
-pub fn lex_char(contents: &str, index: &mut usize) -> Token {
-    if contents.starts_with("\'\'\'") { *index += 3; Token::ValueChar('\'') }
-    else if contents.starts_with("\'\\n\'") { *index += 4; Token::ValueChar('\n') }
-    else if contents.starts_with("\'\\t\'") { *index += 4; Token::ValueChar('\t') }
-    else { *index += 3; Token::ValueChar(contents.chars().nth(1).unwrap()) }
+pub fn lex_char(file_name: &str, s: &str, index: &mut usize) -> Result<Token, String> {
+    if s.starts_with("\'\'\'") { *index += 3; Ok(Token::ValueChar('\'')) }
+    else if s.starts_with("\'\\n\'") { *index += 4; Ok(Token::ValueChar('\n')) }
+    else if s.starts_with("\'\\t\'") { *index += 4; Ok(Token::ValueChar('\t')) }
+    else if regex!("^\'.\'").is_match(s) { *index += 3; Ok(Token::ValueChar(s.chars().nth(1).unwrap())) }
+    else { err_message(file_name, usize::MAX, format!("Unknown char at index {}.", index).as_str()) } //TODO Better error message with line number.
 }
 
-pub fn lex_string(contents: &String, index: &mut usize) -> Result<Token, String> {
+pub fn lex_string(file_name: &str, s: &str, index: &mut usize) -> Result<Token, String> {
     unimplemented!();
 }
 
@@ -289,7 +307,7 @@ mod tests {
         println!();
 
         println!("VAL VAL");
-        let t_list = tokenize(contents.0).unwrap();
+        let t_list = tokenize("example.kot", contents.0).unwrap();
         println!("Tokens: {:?}", t_list);
     }
 
