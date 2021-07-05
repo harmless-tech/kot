@@ -52,4 +52,5 @@ pub enum Token {
     ValueBoolean(bool),
 
     ID(String),
+    LineNum(usize),
 }

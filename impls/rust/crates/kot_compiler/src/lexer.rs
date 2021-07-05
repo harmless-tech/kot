@@ -10,7 +10,6 @@ fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, 
     ))
 }
 
-//TODO Should this use borrowing instead for contents?
 pub fn remove_comments(contents: String) -> String {
     let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
@@ -99,7 +98,7 @@ pub fn pre_process(
 ) -> Result<(String, Vec<String>, String), String> {
     let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
-    let mut spec_vec = Vec::new();
+    let spec_vec: Vec<String>;
     if let Some(first_line) = lines.get_mut(0) {
         spec_vec = first_line
             .split_whitespace()
@@ -130,12 +129,11 @@ pub fn pre_process(
     Ok((lines.join("\n"), spec_vec, metadata.join("\n")))
 }
 
-//TODO Should this use borrowing instead for contents?
-//TODO This should pass line number info to the parser, and make use of line info.
 #[rustfmt::skip]
-pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String> {
+pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String> {
     let mut token_list = Vec::new();
     let mut index = 0_usize;
+    let mut line_num = 0_usize;
 
     while index < contents.len() {
         let s = &contents[index..contents.len()];
@@ -196,26 +194,19 @@ pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String>
         else if regex!("^>>").is_match(s) { token_list.push(Token::BitwiseShiftRight); index += 1; } // Bitwise Shift Right
 
         else if regex!("^\'").is_match(s) { // Value Char
-            token_list.push(lex_char(file_name, s, &mut index)?);
+            token_list.push(lex_char(file_name, line_num, s, &mut index)?);
         }
         else if let Some(cap) = regex_captures!("^[\\d_]+[.]?[\\d_]*", s) { // Value Number
             token_list.push(Token::ValueNumber(cap.to_string()));
             index += cap.len();
         }
-        else if regex!("^[#]*\"").is_match(s) { // Value String
-            token_list.push(lex_string(file_name, s, &mut index)?);
+        else if regex!("^#*\"").is_match(s) { // Value String
+            token_list.push(lex_string(file_name, line_num, s, &mut index)?);
         }
         else if let Some((_, cap)) = regex_captures!("^(true|false)", s) { // Value Boolean
             if cap.eq("true") { token_list.push(Token::ValueBoolean(true)); }
             else if cap.eq("false")  { token_list.push(Token::ValueBoolean(false)); }
-            else {
-                err_message(file_name, usize::MAX,
-                            format!(
-                                "Lexer failed to id boolean at index {}.",
-                                index
-                            ).as_str()
-                )?;
-            }
+            else { err_message(file_name, line_num, "Lexer failed to id boolean.")?; }
 
             index += cap.len();
         }
@@ -224,6 +215,12 @@ pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String>
             token_list.push(Token::ID(cap.to_string()));
             index += cap.len();
         }
+
+        else if regex!("^\n").is_match(s) {
+            line_num += 1;
+            token_list.push(Token::LineNum(line_num));
+            index += 1;
+        }
         else { index += 1; }
     }
 
@@ -231,16 +228,47 @@ pub fn tokenize(file_name: &str, contents: String) -> Result<Vec<Token>, String>
 }
 
 #[rustfmt::skip]
-pub fn lex_char(file_name: &str, s: &str, index: &mut usize) -> Result<Token, String> {
+pub fn lex_char(file_name: &str, line_num: usize, s: &str, index: &mut usize) -> Result<Token, String> {
     if s.starts_with("\'\'\'") { *index += 3; Ok(Token::ValueChar('\'')) }
     else if s.starts_with("\'\\n\'") { *index += 4; Ok(Token::ValueChar('\n')) }
     else if s.starts_with("\'\\t\'") { *index += 4; Ok(Token::ValueChar('\t')) }
     else if regex!("^\'.\'").is_match(s) { *index += 3; Ok(Token::ValueChar(s.chars().nth(1).unwrap())) }
-    else { err_message(file_name, usize::MAX, format!("Unknown char at index {}.", index).as_str()) } //TODO Better error message with line number.
+    else { err_message(file_name, line_num, "Lexer failed to id char.") }
 }
 
-pub fn lex_string(file_name: &str, s: &str, index: &mut usize) -> Result<Token, String> {
-    unimplemented!();
+#[rustfmt::skip]
+pub fn lex_string(file_name: &str, line_num: usize, s: &str, index: &mut usize, ) -> Result<Token, String> {
+    let cap = match regex_captures!("^#*\"", s) {
+        Some(s) => s,
+        None => {
+            return err_message(
+                file_name,
+                line_num,
+                "Lexer failed to process starting quote.",
+            )
+        }
+    };
+    let quote_size = cap.len();
+
+    let mut found = false;
+    let mut i = quote_size;
+    while !found && i < s.len() {
+        let s = &s[i..s.len()];
+
+        if let Some(cap) = regex_captures!("^\"#*", s) {
+            if cap.len() == quote_size { found = true; }
+            else { i += cap.len(); }
+        }
+        else { i += 1; }
+    }
+
+    if !found {
+        err_message(file_name, line_num, "Lexer failed to find ending quote.")
+    }
+    else {
+        *index += i + quote_size;
+        Ok(Token::ValueString(s[quote_size..i].to_string()))
+    }
 }
 
 //TODO Better tests.
@@ -265,7 +293,7 @@ mod tests {
         println!();
 
         println!("\n\nTokens: \n");
-        let t_list = tokenize("example.kot", contents.0).unwrap();
+        let t_list = tokenize("example.kot", &contents.0).unwrap();
         println!("{:?}", t_list);
     }
 
