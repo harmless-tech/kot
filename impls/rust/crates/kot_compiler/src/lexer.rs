@@ -138,7 +138,7 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
     while index < contents.len() {
         let s = &contents[index..contents.len()];
 
-        if regex!("^val").is_match(s) { token_list.push(Token::Val); index += 3; } // Val
+        if regex!("^val\\s").is_match(s) { token_list.push(Token::Val); index += 3; } // Val
         else if regex!("^:").is_match(s) { token_list.push(Token::Colon); index += 1; } // Colon
         else if regex!("^=").is_match(s) { token_list.push(Token::Assign); index += 1; } // Assign
         else if regex!("^,").is_match(s) { token_list.push(Token::Comma); index += 1; } // Comma
@@ -151,24 +151,24 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         else if regex!("^\\{").is_match(s) { token_list.push(Token::LeftCurlyBrace); index += 1; } // Left Curly Brace
         else if regex!("^}").is_match(s) { token_list.push(Token::RightCurlyBrace); index += 1; } // Right Curly Brace
 
-        else if regex!("^char").is_match(s) { token_list.push(Token::TypeChar); index += 4; } // Type Char
-        else if regex!("^chr").is_match(s) { token_list.push(Token::TypeChar); index += 3; } // Type Char
-        else if regex!("^int").is_match(s) { token_list.push(Token::TypeInt64); index += 3; } // Type Int
-        else if regex!("^i64").is_match(s) { token_list.push(Token::TypeInt64); index += 3; } // Type Int
-        else if regex!("^uint").is_match(s) { token_list.push(Token::TypeUInt64); index += 4; } // Type UInt
-        else if regex!("^u64").is_match(s) { token_list.push(Token::TypeUInt64); index += 3; } // Type UInt
-        else if regex!("^float").is_match(s) { token_list.push(Token::TypeFloat64); index += 5; } // Type Float
-        else if regex!("^f64").is_match(s) { token_list.push(Token::TypeFloat64); index += 3; } // Type Float
-        else if regex!("^byte").is_match(s) { token_list.push(Token::TypeByte); index += 4; } // Type Byte
-        else if regex!("^u8").is_match(s) { token_list.push(Token::TypeByte); index += 2; } // Type Byte
-        else if regex!("^string").is_match(s) { token_list.push(Token::TypeString); index += 6; } // Type String
-        else if regex!("^str").is_match(s) { token_list.push(Token::TypeString); index += 3; } // Type String
-        else if regex!("^boolean").is_match(s) { token_list.push(Token::TypeBoolean); index += 7; } // Type Boolean
-        else if regex!("^bool").is_match(s) { token_list.push(Token::TypeBoolean); index += 4; } // Type Boolean
-        else if regex!("^object").is_match(s) { token_list.push(Token::TypeObject); index += 6; } // Type Object
-        else if regex!("^obj").is_match(s) { token_list.push(Token::TypeObject); index += 3; } // Type Object
+        else if regex!("^char\\W").is_match(s) { token_list.push(Token::TypeChar); index += 4; } // Type Char
+        else if regex!("^chr\\W").is_match(s) { token_list.push(Token::TypeChar); index += 3; } // Type Char
+        else if regex!("^int\\W").is_match(s) { token_list.push(Token::TypeInt64); index += 3; } // Type Int
+        else if regex!("^i64\\W").is_match(s) { token_list.push(Token::TypeInt64); index += 3; } // Type Int
+        else if regex!("^uint\\W").is_match(s) { token_list.push(Token::TypeUInt64); index += 4; } // Type UInt
+        else if regex!("^u64\\W").is_match(s) { token_list.push(Token::TypeUInt64); index += 3; } // Type UInt
+        else if regex!("^float\\W").is_match(s) { token_list.push(Token::TypeFloat64); index += 5; } // Type Float
+        else if regex!("^f64\\W").is_match(s) { token_list.push(Token::TypeFloat64); index += 3; } // Type Float
+        else if regex!("^byte\\W").is_match(s) { token_list.push(Token::TypeByte); index += 4; } // Type Byte
+        else if regex!("^u8\\W").is_match(s) { token_list.push(Token::TypeByte); index += 2; } // Type Byte
+        else if regex!("^string\\W").is_match(s) { token_list.push(Token::TypeString); index += 6; } // Type String
+        else if regex!("^str\\W").is_match(s) { token_list.push(Token::TypeString); index += 3; } // Type String
+        else if regex!("^boolean\\W").is_match(s) { token_list.push(Token::TypeBoolean); index += 7; } // Type Boolean
+        else if regex!("^bool\\W").is_match(s) { token_list.push(Token::TypeBoolean); index += 4; } // Type Boolean
+        else if regex!("^object\\W").is_match(s) { token_list.push(Token::TypeObject); index += 6; } // Type Object
+        else if regex!("^obj\\W").is_match(s) { token_list.push(Token::TypeObject); index += 3; } // Type Object
 
-        else if regex!("^fun").is_match(s) { token_list.push(Token::Function); index += 3; } // Function
+        else if regex!("^fun\\W").is_match(s) { token_list.push(Token::Function); index += 3; } // Function
         else if regex!("^\\.\\.").is_match(s) { token_list.push(Token::Concat); index += 2; } // Concat
 
         else if regex!("^![^=]").is_match(s) { token_list.push(Token::Negate); index += 1; } // Negate
@@ -194,16 +194,16 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         else if regex!("^>>").is_match(s) { token_list.push(Token::BitwiseShiftRight); index += 1; } // Bitwise Shift Right
 
         else if regex!("^\'").is_match(s) { // Value Char
-            token_list.push(lex_char(file_name, line_num, s, &mut index)?);
+            token_list.push(lex_char(file_name, &mut line_num, s, &mut index)?);
         }
         else if let Some(cap) = regex_captures!("^[\\d_]+[.]?[\\d_]*", s) { // Value Number
             token_list.push(Token::ValueNumber(cap.to_string()));
             index += cap.len();
         }
         else if regex!("^#*\"").is_match(s) { // Value String
-            token_list.push(lex_string(file_name, line_num, s, &mut index)?);
+            token_list.push(lex_string(file_name, &mut line_num, s, &mut index)?);
         }
-        else if let Some((_, cap)) = regex_captures!("^(true|false)", s) { // Value Boolean
+        else if let Some((_, cap)) = regex_captures!("^(true|false)\\s", s) { // Value Boolean
             if cap.eq("true") { token_list.push(Token::ValueBoolean(true)); }
             else if cap.eq("false")  { token_list.push(Token::ValueBoolean(false)); }
             else { err_message(file_name, line_num, "Lexer failed to id boolean.")?; }
@@ -236,22 +236,24 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
 }
 
 #[rustfmt::skip]
-pub fn lex_char(file_name: &str, line_num: usize, s: &str, index: &mut usize) -> Result<Token, String> {
-    if s.starts_with("\'\'\'") { *index += 3; Ok(Token::ValueChar('\'')) }
+pub fn lex_char(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize) -> Result<Token, String> {
+    if regex!("^\'\'\'").is_match(s) { *index += 3; Ok(Token::ValueChar('\'')) }
+    else if regex!("^\'\r\n\'").is_match(s) { *line_num += 1; *index += 4; Ok(Token::ValueChar('\n')) }
+    else if regex!("^\'\n\'").is_match(s) { *line_num += 1; *index += 3; Ok(Token::ValueChar('\n')) }
     else if s.starts_with("\'\\n\'") { *index += 4; Ok(Token::ValueChar('\n')) }
     else if s.starts_with("\'\\t\'") { *index += 4; Ok(Token::ValueChar('\t')) }
     else if regex!("^\'.\'").is_match(s) { *index += 3; Ok(Token::ValueChar(s.chars().nth(1).unwrap())) }
-    else { err_message(file_name, line_num, "Lexer failed to id char.") }
+    else { err_message(file_name, *line_num, "Lexer failed to id char or char is actually a string type.") }
 }
 
 #[rustfmt::skip]
-pub fn lex_string(file_name: &str, line_num: usize, s: &str, index: &mut usize, ) -> Result<Token, String> {
+pub fn lex_string(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize, ) -> Result<Token, String> {
     let cap = match regex_captures!("^#*\"", s) {
         Some(s) => s,
         None => {
             return err_message(
                 file_name,
-                line_num,
+                *line_num,
                 "Lexer failed to process starting quote.",
             )
         }
@@ -271,11 +273,14 @@ pub fn lex_string(file_name: &str, line_num: usize, s: &str, index: &mut usize, 
     }
 
     if !found {
-        err_message(file_name, line_num, "Lexer failed to find ending quote.")
+        err_message(file_name, *line_num, "Lexer failed to find ending quote.")
     }
     else {
+        let q_str = s[quote_size..i].to_string();
+        *line_num += q_str.matches("\n").count();
+
         *index += i + quote_size;
-        Ok(Token::ValueString(s[quote_size..i].to_string()))
+        Ok(Token::ValueString(q_str))
     }
 }
 

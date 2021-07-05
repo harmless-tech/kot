@@ -21,6 +21,9 @@ val pow: int = fun pow(hey, 2)
 val fpow: float = fun pow(1.5, 1_0_0.1) // Can have underscores in numbers.
 val upow: uint = fun pow(TEST, 0)
 val f: string = fun format("Num: {}", 0)
+val cc: chr = '	'
+val cc: chr = '
+'
 
 val tup: (int, str) = (0, "string!")
 
