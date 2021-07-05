@@ -218,7 +218,15 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
 
         else if regex!("^\n").is_match(s) {
             line_num += 1;
+
+            if let Some(last) = token_list.last() {
+                match last {
+                    Token::LineNum(_) => { token_list.pop(); }
+                    _ => {}
+                }
+            }
             token_list.push(Token::LineNum(line_num));
+
             index += 1;
         }
         else { index += 1; }
