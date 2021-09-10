@@ -3,5 +3,7 @@
 /target
 /crates/*/target
 
+/build
+
 *.tmp
 *.temp

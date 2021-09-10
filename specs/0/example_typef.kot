@@ -13,21 +13,19 @@ KOT_SPEC_0
  * This is a multiline comment.
  */
 
-val hey: int = 0
-val TEST: u64 = 0
+int hey = 0
+u64 TEST = 0
 
-val tern: bool = true ? true : false
-val pow: int = fun pow(hey, 2)
-val fpow: float = fun pow(1.5, 1_0_0.1) // Can have underscores in numbers.
-val upow: uint = fun pow(TEST, 0)
-val f: string = fun format("Num: {}", 0)
-val cc: chr = '	'
-val cc: chr = '
+bool tern = true ? true : false
+int pow = fun pow(hey, 2)
+float fpow = fun pow(1.5, 1_0_0.1) // Can have underscores in numbers.
+uint upow = fun pow(TEST, 0)
+string f = fun format("Num: {}", 0)
+chr cc = '	'
+char cc = '
 '
 
-let tech: bool = 0 as u64
-
-val tup: (int, str) = (0, "string!")
+let tup: (int, str) = (0, "string!")
 
 #META Hello! Am data.
 

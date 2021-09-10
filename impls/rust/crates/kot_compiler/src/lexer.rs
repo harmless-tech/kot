@@ -138,7 +138,7 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
     while index < contents.len() {
         let s = &contents[index..contents.len()];
 
-        if regex!("^val\\s").is_match(s) { token_list.push(Token::Val); index += 3; } // Val
+        if regex!("^val\\s").is_match(s) || regex!("^let\\s").is_match(s) { token_list.push(Token::Val); index += 3; } // Val
         else if regex!("^:").is_match(s) { token_list.push(Token::Colon); index += 1; } // Colon
         else if regex!("^=").is_match(s) { token_list.push(Token::Assign); index += 1; } // Assign
         else if regex!("^,").is_match(s) { token_list.push(Token::Comma); index += 1; } // Comma
@@ -169,6 +169,7 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         else if regex!("^obj\\W").is_match(s) { token_list.push(Token::TypeObject); index += 3; } // Type Object
 
         else if regex!("^fun\\W").is_match(s) { token_list.push(Token::Function); index += 3; } // Function
+        else if regex!("^as\\W").is_match(s) { token_list.push(Token::Cast); index += 2; } // Cast
         else if regex!("^\\.\\.").is_match(s) { token_list.push(Token::Concat); index += 2; } // Concat
 
         else if regex!("^![^=]").is_match(s) { token_list.push(Token::Negate); index += 1; } // Negate
@@ -211,7 +212,7 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
             index += cap.len();
         }
 
-        else if let Some(cap) = regex_captures!("^[^\\d\\s]{1}[\\w]*", s) { // ID
+        else if let Some(cap) = regex_captures!("^[^\\d\\s]{1}[\\w.]*", s) { // ID
             token_list.push(Token::ID(cap.to_string()));
             index += cap.len();
         }
@@ -236,7 +237,7 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
 }
 
 #[rustfmt::skip]
-pub fn lex_char(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize) -> Result<Token, String> {
+fn lex_char(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize) -> Result<Token, String> {
     if regex!("^\'\'\'").is_match(s) { *index += 3; Ok(Token::ValueChar('\'')) }
     else if regex!("^\'\r\n\'").is_match(s) { *line_num += 1; *index += 4; Ok(Token::ValueChar('\n')) }
     else if regex!("^\'\n\'").is_match(s) { *line_num += 1; *index += 3; Ok(Token::ValueChar('\n')) }
@@ -247,7 +248,7 @@ pub fn lex_char(file_name: &str, line_num: &mut usize, s: &str, index: &mut usiz
 }
 
 #[rustfmt::skip]
-pub fn lex_string(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize, ) -> Result<Token, String> {
+fn lex_string(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize, ) -> Result<Token, String> {
     let cap = match regex_captures!("^#*\"", s) {
         Some(s) => s,
         None => {
@@ -324,6 +325,30 @@ mod tests {
         println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
         println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
         println!();
+
+        println!("\n\nTokens: \n");
+        let t_list = tokenize("example_noval.kot", &contents.0).unwrap();
+        println!("{:?}", t_list);
+    }
+
+    #[test]
+    fn test_example_type_file() {
+        let mut f_str = String::new();
+        let mut file = File::open("../../../../specs/0/example_typef.kot").unwrap();
+        file.read_to_string(&mut f_str).unwrap();
+
+        let contents = remove_comments(f_str);
+        println!("\n\nNo Comments:\n\n{}", contents);
+
+        let contents = pre_process("example_typef.kot", contents).unwrap();
+        println!("\n\nPre-Process:\n\n{}", contents.0);
+        println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
+        println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
+        println!();
+
+        println!("\n\nTokens: \n");
+        let t_list = tokenize("example_typef.kot", &contents.0).unwrap();
+        println!("{:?}", t_list);
     }
 }
 

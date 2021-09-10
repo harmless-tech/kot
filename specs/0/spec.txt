@@ -1,6 +1,7 @@
 Kot Spec - Version 0 - Stage Alpha
 
-TODO Allow adding of variables, currently only constants exist.
+!!! This may not represent the code in the example files. !!!
+!!! This may be out of date !!!
 
 - Kot File
     First line must have the kot spec version (KOT_SPEC_0).

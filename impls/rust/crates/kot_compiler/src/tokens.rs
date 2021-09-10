@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum Token {
-    Val,
+    Val, // AKA val, let
     Colon,
     Assign,
     Comma,
@@ -20,9 +20,10 @@ pub enum Token {
     TypeByte,    // Converted from ValueNumber.
     TypeString,
     TypeBoolean,
-    TypeObject, // An array will have brackets after the type and therefore does not need its own type.
+    TypeObject, // An array will have brackets after the type and therefore does not need its own token.
 
     Function,
+    Cast,
     Concat,
 
     Negate,

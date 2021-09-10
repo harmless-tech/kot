@@ -16,9 +16,9 @@ name = "kot"
 path = "src/main.rs"
 
 [dependencies]
-brotli = "3.3.0"
-kot = { path = "crates/kot", version = "0.0.1" }
-kot_compiler = { path = "crates/kot_compiler", version = "0.0.1" }
+brotli = "3.3.2"
+kot = { path = "crates/kot" }
+kot_compiler = { path = "crates/kot_compiler" }
 log = "0.4.14"
 log4rs = "1.0.0"
 

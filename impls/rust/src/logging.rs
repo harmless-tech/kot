@@ -18,11 +18,9 @@ pub fn setup_log() -> log4rs::Handle {
         Err(_) => cleanup_log = false,
     }
 
-    let filter = if DEBUG_BUILD {
-        LevelFilter::Trace
-    }
-    else {
-        LevelFilter::Info
+    let filter = match DEBUG_BUILD {
+        true => LevelFilter::Trace,
+        false => LevelFilter::Info,
     };
 
     // Setup

@@ -18,18 +18,11 @@ mod tests {
     use std::{fs::File, io::Read};
 
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-
-    #[test]
     fn test_example_file() {
         //TODO
 
         let mut f_str = String::new();
         let mut file = File::open("../../../../specs/0/example.kot").unwrap();
         file.read_to_string(&mut f_str).unwrap();
-
-        //println!("Import: {}", f_str);
     }
 }
