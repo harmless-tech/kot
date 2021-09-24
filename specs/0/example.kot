@@ -26,6 +26,7 @@ val cc: chr = '
 '
 
 let tech: bool = 0 as u64
+data heyyy: int = 0
 
 val tup: (int, str) = (0, "string!")
 
@@ -49,7 +50,7 @@ As such this comment is ignored."
 val sss: str = ###"val sss: str = ##"val sss: str = ##""####"##"###
 val ss1: str = ##""#"##
 
-val newline: chr = '\n' // Only \n and \t converted.
+val newline: chr = '\n' // Only \n and \t converted into characters.
 
 val HEY: object = {
     val value: string = "Hey!"

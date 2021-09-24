@@ -138,7 +138,9 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
     while index < contents.len() {
         let s = &contents[index..contents.len()];
 
-        if regex!("^val\\s").is_match(s) || regex!("^let\\s").is_match(s) { token_list.push(Token::Val); index += 3; } // Val
+        if regex!("^data\\s").is_match(s) { token_list.push(Token::Data); index += 4; } // Data
+        else if regex!("^val\\s").is_match(s) { token_list.push(Token::Data); index += 3; } // Data
+        else if regex!("^let\\s").is_match(s) { token_list.push(Token::Data); index += 3; } // Data
         else if regex!("^:").is_match(s) { token_list.push(Token::Colon); index += 1; } // Colon
         else if regex!("^=").is_match(s) { token_list.push(Token::Assign); index += 1; } // Assign
         else if regex!("^,").is_match(s) { token_list.push(Token::Comma); index += 1; } // Comma

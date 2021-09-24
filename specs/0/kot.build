@@ -3,7 +3,7 @@ KOT_SPEC_0 KOT_BUILD_FILE
 # Build file only has # comments.
 
 [SRC]
-./
+.
 
 [COMPRESS]
 true

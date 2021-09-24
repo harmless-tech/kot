@@ -1,6 +1,6 @@
 #[derive(Debug)]
 pub enum Token {
-    Val, // AKA val, let
+    Data, // AKA val, let
     Colon,
     Assign,
     Comma,

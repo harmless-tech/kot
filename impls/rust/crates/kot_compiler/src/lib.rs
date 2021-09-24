@@ -3,6 +3,7 @@ mod lexer;
 mod parser;
 mod tokens;
 mod writer;
+mod kot_types;
 
 //TODO Maybe don't use files, so this can be used without a filesystem.
 //TODO Debug is determined by the built binary.

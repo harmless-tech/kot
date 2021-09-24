@@ -3,6 +3,9 @@ Kot Spec - Version 0 - Stage Alpha
 !!! This may not represent the code in the example files. !!!
 !!! This may be out of date !!!
 
+Ideas:
+    - Let types be inferrable?
+
 - Kot File
     First line must have the kot spec version (KOT_SPEC_0).
     Lines after the first marked with # at the start will have their data put into the metadata of the file.
@@ -18,11 +21,11 @@ Kot Spec - Version 0 - Stage Alpha
     # = Build file single line.
 
 - Types
-    val is used to mark a data type as unchangable. (TODO Might get rid of val... or allow it to be excluded.)
+    val, let, or data is used to mark an entry.
     Primitive:
-        Only 64 bit numbers.
+        Only 64 bit numbers for now.
         Number Type:
-            - char, chr (4 bytes big)
+            - char, chr (4 bytes big or whatever rust does)
             - int, i64
             - uint, u64
             - float, f64
@@ -34,6 +37,8 @@ Kot Spec - Version 0 - Stage Alpha
     Array:
         Cannot have an array of objects.
         - Primitive[]
+
+    List: ??? instead of array? of universial tuple?
 
     Object:
         - object, obj
