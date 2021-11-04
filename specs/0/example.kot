@@ -1,4 +1,3 @@
-KOT_SPEC_0
 #NAME Example Program
 #VERSION 0.0.1
 #AUTHORS harmless-tech (Harmless_Tech)
@@ -16,6 +15,16 @@ KOT_SPEC_0
 val hey: int = 0
 val TEST: u64 = 0
 
+interface iiTest {
+    data f1: int
+    data f2: string
+}
+
+data s: str =
+#"    valid string"#
+data s: str =
+####"    valid string 2"####
+
 val tern: bool = true ? true : false
 val pow: int = fun pow(hey, 2)
 val fpow: float = fun pow(1.5, 1_0_0.1) // Can have underscores in numbers.
@@ -24,6 +33,11 @@ val f: string = fun format("Num: {}", 0)
 val cc: chr = '	'
 val cc: chr = '
 '
+
+let i_test_me: comply iiTest {
+    data f1 = 10
+    data f2 = "Strings" .. " are " .. "cool!"
+}
 
 let tech: bool = 0 as u64
 data heyyy: int = 0
@@ -59,6 +73,11 @@ val HEY: object = {
 
 val arr: int[] = [0, 1, 2, 3, 4, 5,
     6, 7, 8, 1 + 1]
+
+val bigger_arr: int[] = arr .. 6 // Appends 6 to arr.
+data bigger_arr: int[] = arr .. [6, 7, 8] // Appends 6, 7, 8 to arr.
+
+data arr_scale: int[] = arr * 8 // Scales every value in array by * 8.
 
 val add: int = 1 + 2.0 // Converted to f64 then back to i64
 

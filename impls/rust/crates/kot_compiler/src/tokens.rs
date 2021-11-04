@@ -1,6 +1,8 @@
 #[derive(Debug)]
 pub enum Token {
     Data, // AKA val, let
+    Interface,
+    ComplyWith,
     Colon,
     Assign,
     Comma,
@@ -53,5 +55,5 @@ pub enum Token {
     ValueBoolean(bool),
 
     ID(String),
-    LineNum(usize),
+    LineNum(usize), // For compiler use only.
 }

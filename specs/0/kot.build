@@ -1,13 +1,16 @@
-KOT_SPEC_0 KOT_BUILD_FILE
-
-# Build file only has # comments.
+KOT_BUILD_FILE
 
 [SRC]
 .
 
-[COMPRESS]
+[COMPRESS] # Will this really be an option?
 true
 
-[INPUT]
-example.kot
-example_noval.kot => opt/example.kob # Optionally you can map the file name and location to somewhere else.
+[KOI] # Koi files are used in every kot file below.
+example.koi
+
+[KOT] # 
+example.kot # Will default to => build/example.kob
+example.kot => build/example_cus.kob
+# Can compile a file multiple times as long as it maps to something different,
+# or else it will overwrite that file.

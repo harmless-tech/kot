@@ -1,0 +1,6 @@
+interface i_test {
+    data f1: int
+    data f2: str
+}
+
+data CONST_64: uint = 64

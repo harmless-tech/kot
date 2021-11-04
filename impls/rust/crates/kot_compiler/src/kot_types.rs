@@ -9,15 +9,13 @@ pub enum Value {
     String(String),
     Boolean(bool),
 
-    Array()
+    Array(), //TODO
+    Tuple(),
+    Object(),
 }
 
 #[derive(Debug)]
-pub enum Operations {
-
-}
+pub enum Operations {}
 
 #[derive(Debug)]
-pub enum Expressions {
-
-}
+pub enum Expressions {}

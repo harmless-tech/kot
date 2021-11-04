@@ -7,7 +7,7 @@ const DEBUG_BUILD: bool = true;
 #[cfg(not(debug_assertions))]
 const DEBUG_BUILD: bool = false;
 
-/*
+/* This options will probably be changed.
  * kot-bin --compress compile FILES -> Builds all FILES.
  * kot-bin --compress build BUILD_FILE -> Builds using a build file.
  * kot-bin read FILE -> Reads in a kob file and outputs it as text.

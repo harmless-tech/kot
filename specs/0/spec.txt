@@ -1,18 +1,17 @@
 Kot Spec - Version 0 - Stage Alpha
 
 !!! This may not represent the code in the example files. !!!
-!!! This may be out of date !!!
+!!! This may be out of date. !!!
 
 Ideas:
     - Let types be inferrable?
 
 - Kot File
-    First line must have the kot spec version (KOT_SPEC_0).
     Lines after the first marked with # at the start will have their data put into the metadata of the file.
     Lines after start the data file.
 
 - Kot Build File
-    First line must have the kot spec version (KOT_SPEC_0) and you also must include KOT_BUILD_FILE.
+    First line must include KOT_BUILD_FILE.
     Data is listed as: [KEY]\n DATA
 
 - Comments
@@ -49,7 +48,7 @@ Ideas:
     (Like Rust's raw strings.)
 
 - Operators
-    THERE IS NO CASTING. (Some types can be auto casted into other types though.)
+    THERE IS NO CASTING. (Some types can be auto cast into other types though.)
     - .. = Append Primitives together into a string.
     - !, &&, || = Logic for booleans.
     - +, -, *, / = (byte -> char -> i64 -> u64 -> f64) Casts to biggest type then does arithmetic.
@@ -59,16 +58,21 @@ Ideas:
 
 - Functions
     You cannot make your own functions.
-    To call a function use: fun function_name(args)
+    To call a function use: fn function_name(args)
     Standard:
-        - pow(Number1, Number2) -> number = (byte -> char -> i64 -> u64 -> f64) Casts to biggest type then does Number1 ^ Number2.
+        - pow(Number1, Number2) -> number = (byte -> char -> i64 -> u64 -> f64) Casts to the biggest type then does Number1 ^ Number2.
         - format(string, Primitive...) -> string = Puts Primitives into {}, located in the format string.
 
 - File Extensions and names
-    Kot data files = *.kot
-    Kot binary files = *.kob
     Kot build file = kot.build
     Kot cache file = kot.cache
+    Extensions:
+      - kot: Data files.
+      - koi: File to hold constants and interfaces.
+      - kob: Binary file.
+      - kog: Compressed binary file. <- Maybe?
+      - koe: Encrypted binary file. <- Maybe?
+      - koz: Compressed and Encrypted binary file. (Or encrypted then compressed?) <- Maybe?
 
 - Compiled File
     Compiled files will hold kot data in binary and checked form. It also evaluates all experessions.

@@ -92,41 +92,18 @@ pub fn remove_comments(contents: String) -> String {
     lines.join("\n")
 }
 
-pub fn pre_process(
-    file_name: &str,
-    contents: String,
-) -> Result<(String, Vec<String>, String), String> {
+pub fn pre_process(file_name: &str, contents: String) -> Result<(String, String), String> {
     let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
-
-    let spec_vec: Vec<String>;
-    if let Some(first_line) = lines.get_mut(0) {
-        spec_vec = first_line
-            .split_whitespace()
-            .map(|s| s.to_string())
-            .collect();
-        first_line.drain(0..first_line.len());
-    }
-    else {
-        return err_message(file_name, 0, "The first line does not exist.");
-    }
-
-    if !spec_vec.contains(&kot::KOT_VERSION.to_string()) {
-        return err_message(
-            file_name,
-            0,
-            "KOT_SPEC_# is missing or does not match with the spec for this compiler.",
-        );
-    }
 
     let mut metadata = Vec::new();
     for line in lines.iter_mut() {
-        if line.starts_with("#") {
+        if line.starts_with("#") && !(line.starts_with("#\"") || line.starts_with("##")) {
             metadata.push(line.drain(1..line.len()).collect::<String>());
             line.drain(0..1);
         }
     }
 
-    Ok((lines.join("\n"), spec_vec, metadata.join("\n")))
+    Ok((lines.join("\n"), metadata.join("\n")))
 }
 
 #[rustfmt::skip]
@@ -141,6 +118,8 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         if regex!("^data\\s").is_match(s) { token_list.push(Token::Data); index += 4; } // Data
         else if regex!("^val\\s").is_match(s) { token_list.push(Token::Data); index += 3; } // Data
         else if regex!("^let\\s").is_match(s) { token_list.push(Token::Data); index += 3; } // Data
+        else if regex!("^interface\\s").is_match(s) { token_list.push(Token::Interface); index += 9; } // Interface
+        else if regex!("^comply\\s").is_match(s) { token_list.push(Token::ComplyWith); index += 6; } // ComplyWith
         else if regex!("^:").is_match(s) { token_list.push(Token::Colon); index += 1; } // Colon
         else if regex!("^=").is_match(s) { token_list.push(Token::Assign); index += 1; } // Assign
         else if regex!("^,").is_match(s) { token_list.push(Token::Comma); index += 1; } // Comma
@@ -170,7 +149,7 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         else if regex!("^object\\W").is_match(s) { token_list.push(Token::TypeObject); index += 6; } // Type Object
         else if regex!("^obj\\W").is_match(s) { token_list.push(Token::TypeObject); index += 3; } // Type Object
 
-        else if regex!("^fun\\W").is_match(s) { token_list.push(Token::Function); index += 3; } // Function
+        else if regex!("^fn\\W").is_match(s) { token_list.push(Token::Function); index += 3; } // Function
         else if regex!("^as\\W").is_match(s) { token_list.push(Token::Cast); index += 2; } // Cast
         else if regex!("^\\.\\.").is_match(s) { token_list.push(Token::Concat); index += 2; } // Concat
 
@@ -250,7 +229,7 @@ fn lex_char(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize) -
 }
 
 #[rustfmt::skip]
-fn lex_string(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize, ) -> Result<Token, String> {
+fn lex_string(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize) -> Result<Token, String> {
     let cap = match regex_captures!("^#*\"", s) {
         Some(s) => s,
         None => {
@@ -304,52 +283,11 @@ mod tests {
 
         let contents = pre_process("example.kot", contents).unwrap();
         println!("\n\nPre-Process:\n\n{}", contents.0);
-        println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
-        println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
+        println!("\n\nPre-Process Metadata:\n\n{}", contents.1);
         println!();
 
         println!("\n\nTokens: \n");
         let t_list = tokenize("example.kot", &contents.0).unwrap();
-        println!("{:?}", t_list);
-    }
-
-    #[test]
-    fn test_example_no_val_file() {
-        let mut f_str = String::new();
-        let mut file = File::open("../../../../specs/0/example_noval.kot").unwrap();
-        file.read_to_string(&mut f_str).unwrap();
-
-        let contents = remove_comments(f_str);
-        println!("\n\nNo Comments:\n\n{}", contents);
-
-        let contents = pre_process("example_noval.kot", contents).unwrap();
-        println!("\n\nPre-Process:\n\n{}", contents.0);
-        println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
-        println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
-        println!();
-
-        println!("\n\nTokens: \n");
-        let t_list = tokenize("example_noval.kot", &contents.0).unwrap();
-        println!("{:?}", t_list);
-    }
-
-    #[test]
-    fn test_example_type_file() {
-        let mut f_str = String::new();
-        let mut file = File::open("../../../../specs/0/example_typef.kot").unwrap();
-        file.read_to_string(&mut f_str).unwrap();
-
-        let contents = remove_comments(f_str);
-        println!("\n\nNo Comments:\n\n{}", contents);
-
-        let contents = pre_process("example_typef.kot", contents).unwrap();
-        println!("\n\nPre-Process:\n\n{}", contents.0);
-        println!("\n\nPre-Process Specs:\n\n{:?}", contents.1);
-        println!("\n\nPre-Process Metadata:\n\n{}", contents.2);
-        println!();
-
-        println!("\n\nTokens: \n");
-        let t_list = tokenize("example_typef.kot", &contents.0).unwrap();
         println!("{:?}", t_list);
     }
 }

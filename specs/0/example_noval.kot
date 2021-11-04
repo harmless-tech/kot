@@ -1,4 +1,5 @@
-KOT_SPEC_0
+// !!! This method will be unsupported in spec 0. !!!
+
 #NAME Example Program (No Val)
 #VERSION 0.0.1
 #AUTHORS harmless-tech (Harmless_Tech)
