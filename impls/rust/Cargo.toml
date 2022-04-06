@@ -7,7 +7,7 @@ description = "A strictly typed format for storing and reading data. Binary for 
 readme = "../../README.md"
 homepage = "https://harmless.tech/languages/kot"
 repository = "https://github.com/harmless-tech/kot"
-license-file = "../../LICENSE"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -16,10 +16,10 @@ name = "kot"
 path = "src/main.rs"
 
 [dependencies]
-brotli = "3.3.2"
+brotli = "3.3.4"
 kot = { path = "crates/kot" }
 kot_compiler = { path = "crates/kot_compiler" }
-log = "0.4.14"
+log = "0.4.16"
 log4rs = "1.0.0"
 
 [workspace]

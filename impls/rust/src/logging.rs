@@ -7,9 +7,10 @@ use log4rs::{
 };
 use std::fs::remove_file;
 
-//TODO Allow for log path to be changed?
+//TODO: Allow for log path to be changed?
 static LOG_PATH: &str = "build/kot.log";
 
+//TODO: Only allow logging when an argument is passed in to enable it.
 pub fn setup_log() -> log4rs::Handle {
     // Cleanup
     let cleanup_log: bool;

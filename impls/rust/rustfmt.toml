@@ -3,4 +3,4 @@ newline_style = "Native"
 reorder_imports = true
 control_brace_style = "ClosingNextLine"
 imports_granularity = "Crate"
-edition = "2018"
+edition = "2021"
