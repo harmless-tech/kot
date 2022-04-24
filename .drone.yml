@@ -19,10 +19,9 @@ steps:
   commands:
     - cd impls/rust
     - cargo test --workspace
-    - cargo test --workspace --release
 - name: build
   image: rust:latest
   commands:
     - cd impls/rust
     - cargo build --workspace
-    - cargo build --workspace --release
+# Allow for artifact upload later.
