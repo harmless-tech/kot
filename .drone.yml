@@ -9,6 +9,10 @@ trigger:
     - push
     - custom
 
+platform:
+  os: linux
+  arch: arm64
+
 steps:
 - name: test
   image: rust:latest
