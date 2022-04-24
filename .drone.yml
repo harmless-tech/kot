@@ -1,0 +1,29 @@
+kind: pipeline
+type: docker
+name: default
+
+platform:
+  os: linux
+  arch: arm64
+
+trigger:
+  branch:
+    - main
+  event:
+    - push
+
+steps:
+- name: build
+  image: rust:latest
+  commands:
+    - cd impls/rust
+    - cargo build --workspace
+    - cargo build --workspace --release
+
+steps:
+- name: test
+  image: rust:latest
+  commands:
+    - cd impls/rust
+    - cargo test --workspace
+    - cargo test --workspace --release
