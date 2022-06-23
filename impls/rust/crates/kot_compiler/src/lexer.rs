@@ -281,7 +281,7 @@ mod tests {
         let contents = remove_comments(f_str);
         println!("\n\nNo Comments:\n\n{}", contents);
 
-        let contents = pre_process("example.kot", contents).unwrap();
+        let contents = pre_process( contents);
         println!("\n\nPre-Process:\n\n{}", contents.0);
         println!("\n\nPre-Process Metadata:\n\n{}", contents.1);
         println!();
