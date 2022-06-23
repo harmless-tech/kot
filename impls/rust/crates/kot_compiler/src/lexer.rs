@@ -92,18 +92,18 @@ pub fn remove_comments(contents: String) -> String {
     lines.join("\n")
 }
 
-pub fn pre_process(file_name: &str, contents: String) -> Result<(String, String), String> {
+pub fn pre_process(contents: String) -> (String, String) {
     let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
 
     let mut metadata = Vec::new();
     for line in lines.iter_mut() {
-        if line.starts_with("#") && !(line.starts_with("#\"") || line.starts_with("##")) {
+        if line.starts_with("#") && !(line.starts_with("#\"")) {
             metadata.push(line.drain(1..line.len()).collect::<String>());
             line.drain(0..1);
         }
     }
 
-    Ok((lines.join("\n"), metadata.join("\n")))
+    (lines.join("\n"), metadata.join("\n"))
 }
 
 #[rustfmt::skip]
