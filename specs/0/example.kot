@@ -1,5 +1,5 @@
 #NAME Example Program
-#VERSION 0.0.1
+#VERSION 0.0.2
 #AUTHORS harmless-tech (Harmless_Tech)
 #WEBSITE https://harmless.tech/languages/kot
 #GIT https://github.com/harmless-tech/kot
@@ -12,8 +12,8 @@
  * This is a multiline comment.
  */
 
-val hey: int = 0
-val TEST: u64 = 0
+let hey: int = 0
+let TEST: u64 = 0
 
 interface iiTest {
     data f1: int
@@ -21,17 +21,17 @@ interface iiTest {
 }
 
 data s: str =
-#"    valid string"#
+#"    letid string"#
 data s: str =
-####"    valid string 2"####
+####"    letid string 2"####
 
-val tern: bool = true ? true : false
-val pow: int = fun pow(hey, 2)
-val fpow: float = fun pow(1.5, 1_0_0.1) // Can have underscores in numbers.
-val upow: uint = fun pow(TEST, 0)
-val f: string = fun format("Num: {}", 0)
-val cc: chr = '	'
-val cc: chr = '
+let tern: bool = true ? true : false
+let pow: int = fun pow(hey, 2)
+let fpow: float = fun pow(1.5, 1_0_0.1) // Can have underscores in numbers.
+let upow: uint = fun pow(TEST, 0)
+let f: string = fun format("Num: {}", 0)
+let cc: chr = '	'
+let cc: chr = '
 '
 
 let i_test_me: comply iiTest {
@@ -42,13 +42,13 @@ let i_test_me: comply iiTest {
 let tech: bool = 0 as u64
 data heyyy: int = 0
 
-val tup: (int, str) = (0, "string!")
+let tup: (int, str) = (0, "string!")
 
 #META Hello! Am data.
 
 // \n and \t not converted in strings.
 // All strings are considered raw.
-val T_STRING: str = #"This
+let T_STRING: str = #"This
 is
 a
 string
@@ -58,27 +58,27 @@ after
 each
 word.
 "#
-val str_comment: string = "// There can be comments in a string.
+let str_comment: string = "// There can be comments in a string.
 As such this comment is ignored."
 
-val sss: str = ###"val sss: str = ##"val sss: str = ##""####"##"###
-val ss1: str = ##""#"##
+let sss: str = ###"let sss: str = ##"let sss: str = ##""####"##"###
+let ss1: str = ##""#"##
 
-val newline: chr = '\n' // Only \n and \t converted into characters.
+let newline: chr = '\n' // Only \n and \t converted into characters.
 
-val HEY: object = {
-    val value: string = "Hey!"
-    val val2: str[] = ["", ""]
+let HEY: object = {
+    let letue: string = "Hey!"
+    let let2: str[] = ["", ""]
 }
 
-val arr: int[] = [0, 1, 2, 3, 4, 5,
+let arr: int[] = [0, 1, 2, 3, 4, 5,
     6, 7, 8, 1 + 1]
 
-val bigger_arr: int[] = arr .. 6 // Appends 6 to arr.
+let bigger_arr: int[] = arr .. 6 // Appends 6 to arr.
 data bigger_arr: int[] = arr .. [6, 7, 8] // Appends 6, 7, 8 to arr.
 
-data arr_scale: int[] = arr * 8 // Scales every value in array by * 8.
+data arr_scale: int[] = arr * 8 // Scales every letue in array by * 8.
 
-val add: int = 1 + 2.0 // Converted to f64 then back to i64
+let add: int = 1 + 2.0 // Converted to f64 then back to i64
 
-val take: (str, str) = (tup.1, HEY.val2[0])
+let take: (str, str) = (tup.1, HEY.let2[0])

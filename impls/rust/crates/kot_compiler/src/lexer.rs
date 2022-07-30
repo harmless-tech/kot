@@ -11,7 +11,7 @@ fn err_message<T>(file_name: &str, line_num: usize, message: &str) -> Result<T, 
 }
 
 pub fn remove_comments(contents: String) -> String {
-    let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
+    let mut lines: Vec<String> = contents.split('\n').map(|s| s.to_string()).collect();
 
     let mut in_quotes = false;
     let mut quote_size = 0_usize;
@@ -19,7 +19,7 @@ pub fn remove_comments(contents: String) -> String {
     let mut initial_block_loc = 0_usize;
 
     for line in lines.iter_mut() {
-        if !line.starts_with("#") {
+        if !line.starts_with('#') {
             let mut index = 0_usize;
             let mut block_start_line = false;
 
@@ -93,11 +93,11 @@ pub fn remove_comments(contents: String) -> String {
 }
 
 pub fn pre_process(contents: String) -> (String, String) {
-    let mut lines: Vec<String> = contents.split("\n").map(|s| s.to_string()).collect();
+    let mut lines: Vec<String> = contents.split('\n').map(|s| s.to_string()).collect();
 
     let mut metadata = Vec::new();
     for line in lines.iter_mut() {
-        if line.starts_with("#") && !(line.starts_with("#\"")) {
+        if line.starts_with('#') && !(line.starts_with("#\"") || line.starts_with("##")) {
             metadata.push(line.drain(1..line.len()).collect::<String>());
             line.drain(0..1);
         }
@@ -116,7 +116,6 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         let s = &contents[index..contents.len()];
 
         if regex!("^data\\s").is_match(s) { token_list.push(Token::Data); index += 4; } // Data
-        else if regex!("^val\\s").is_match(s) { token_list.push(Token::Data); index += 3; } // Data
         else if regex!("^let\\s").is_match(s) { token_list.push(Token::Data); index += 3; } // Data
         else if regex!("^interface\\s").is_match(s) { token_list.push(Token::Interface); index += 9; } // Interface
         else if regex!("^comply\\s").is_match(s) { token_list.push(Token::ComplyWith); index += 6; } // ComplyWith
@@ -172,8 +171,10 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         else if regex!("^\\|").is_match(s) { token_list.push(Token::BitwiseOr); index += 1; } // Bitwise Or
         else if regex!("^\\^").is_match(s) { token_list.push(Token::BitwiseXor); index += 1; } // Bitwise Xor
         else if regex!("^~").is_match(s) { token_list.push(Token::BitwiseNegate); index += 1; } // Bitwise Negate
-        else if regex!("^<<").is_match(s) { token_list.push(Token::BitwiseShiftLeft); index += 1; } // Bitwise Shift Left
-        else if regex!("^>>").is_match(s) { token_list.push(Token::BitwiseShiftRight); index += 1; } // Bitwise Shift Right
+        else if regex!("^<<").is_match(s) { token_list.push(Token::BitwiseShiftLeft); index += 2; } // Bitwise Shift Left
+        else if regex!("^>>").is_match(s) { token_list.push(Token::BitwiseShiftRight); index += 2; } // Bitwise Shift Right
+
+        else if regex!("^;").is_match(s) { index += 1; } // Ignore Semicolons
 
         else if regex!("^\'").is_match(s) { // Value Char
             token_list.push(lex_char(file_name, &mut line_num, s, &mut index)?);
@@ -201,11 +202,8 @@ pub fn tokenize(file_name: &str, contents: &String) -> Result<Vec<Token>, String
         else if regex!("^\n").is_match(s) {
             line_num += 1;
 
-            if let Some(last) = token_list.last() {
-                match last {
-                    Token::LineNum(_) => { token_list.pop(); }
-                    _ => {}
-                }
+            if let Some(Token::LineNum(_)) = token_list.last() {
+                token_list.pop();
             }
             token_list.push(Token::LineNum(line_num));
 
@@ -259,7 +257,7 @@ fn lex_string(file_name: &str, line_num: &mut usize, s: &str, index: &mut usize)
     }
     else {
         let q_str = s[quote_size..i].to_string();
-        *line_num += q_str.matches("\n").count();
+        *line_num += q_str.matches('\n').count();
 
         *index += i + quote_size;
         Ok(Token::ValueString(q_str))
@@ -281,7 +279,7 @@ mod tests {
         let contents = remove_comments(f_str);
         println!("\n\nNo Comments:\n\n{}", contents);
 
-        let contents = pre_process( contents);
+        let contents = pre_process(contents);
         println!("\n\nPre-Process:\n\n{}", contents.0);
         println!("\n\nPre-Process Metadata:\n\n{}", contents.1);
         println!();
@@ -291,252 +289,3 @@ mod tests {
         println!("{:?}", t_list);
     }
 }
-
-//<editor-fold desc="OLD">
-// pub fn pre_process_entry(
-//     write_data: &mut WriteData,
-//     file_name: &str,
-//     lines: &mut Vec<String>,
-// ) -> Result<Vec<String>, String> {
-//     let mut imports = Vec::new();
-//     imports.push(String::from(file_name));
-//
-//     for (index, line) in lines.iter_mut().enumerate() {
-//         if line.starts_with("BUILD")
-//             || line.starts_with("#INFO")
-//             || line.starts_with("#REQUIRE")
-//             || line.starts_with("#IMPORT")
-//         {
-//             let spilt: Vec<&str> = line.split_whitespace().collect();
-//             let spilt: Vec<String> = spilt.iter().map(|s| s.to_string()).collect();
-//
-//             if spilt.get(0).unwrap().eq("#BUILD") {
-//                 if spilt.len() == 3 {
-//                     if spilt.get(1).unwrap().eq("binary_name") {
-//                         write_data.build_data.0 = spilt.get(2).unwrap().clone();
-//                     }
-//                     else {
-//                         return err_message(
-//                             file_name,
-//                             index,
-//                             "'#BUILD' does not have a valid first argument.",
-//                         );
-//                     }
-//                 }
-//                 else {
-//                     return err_message(
-//                         file_name,
-//                         index,
-//                         "'#BUILD' should always have 2 arguments.",
-//                     );
-//                 }
-//             }
-//             else if spilt.get(0).unwrap().eq("#INFO") {
-//                 if spilt.len() >= 3 {
-//                     if spilt.get(1).unwrap().eq("name") {
-//                         write_data.metadata.name = spilt[2..spilt.len()].join(" ");
-//                     }
-//                     if spilt.get(1).unwrap().eq("authors") {
-//                         write_data.metadata.authors =
-//                             spilt[2..spilt.len()].iter().map(|s| s.clone()).collect();
-//                     }
-//                     if spilt.get(1).unwrap().eq("license") {
-//                         write_data.metadata.license = spilt[2..spilt.len()].join(" ");
-//                     }
-//                     else if spilt.len() == 3 {
-//                         if spilt.get(1).unwrap().eq("version") {
-//                             write_data.metadata.version = spilt.get(2).unwrap().clone();
-//                         }
-//                         else if spilt.get(1).unwrap().eq("website") {
-//                             write_data.metadata.website = "https://".to_string();
-//                             write_data
-//                                 .metadata
-//                                 .website
-//                                 .push_str(spilt.get(2).unwrap().clone().as_str());
-//                         }
-//                         else if spilt.get(1).unwrap().eq("git") {
-//                             write_data.metadata.git = "https://".to_string();
-//                             write_data
-//                                 .metadata
-//                                 .git
-//                                 .push_str(spilt.get(2).unwrap().clone().as_str());
-//                         }
-//                     }
-//                     else {
-//                         return err_message(
-//                             file_name,
-//                             index,
-//                             "'#INFO ARG' should only have 2 arguments. Unless it is for name, authors, or license.",
-//                         );
-//                     }
-//                 }
-//                 else {
-//                     return err_message(file_name, index, "'#INFO' needs at least 2 arguments.");
-//                 }
-//             }
-//             else if spilt.get(0).unwrap().eq("#REQUIRE") {
-//                 if spilt.len() == 3 {
-//                     if spilt.get(1).unwrap().eq("hta_version") {
-//                         let v = match version::parse_version_str(spilt.get(2).unwrap()) {
-//                             None => return err_message(file_name, index, "'#REQUIRE hta_version' has invalid second arg. Should be in format 'x.x.x.'"),
-//                             Some(v) => v,
-//                         };
-//
-//                         if !version::is_version_ge(write_data.compiler_version, v) {
-//                             return err_message(file_name, index, "'#REQUIRE hta_version' is less then the compiler version, please either increase the version or use an older compiler.");
-//                         }
-//                     }
-//                     else if spilt.get(1).unwrap().eq("native_lib") {
-//                         return err_message(
-//                             file_name,
-//                             index,
-//                             "#REQUIRE native_lib is not implemented.",
-//                         );
-//                     }
-//                     else {
-//                         return err_message(
-//                             file_name,
-//                             index,
-//                             "'#REQUIRE' does not have a valid first argument.",
-//                         );
-//                     }
-//                 }
-//                 else {
-//                     return err_message(
-//                         file_name,
-//                         index,
-//                         "'#REQUIRE' should only have 2 arguments.",
-//                     );
-//                 }
-//             }
-//             else if spilt.get(0).unwrap().eq("#IMPORT") {
-//                 if spilt.len() == 2 {
-//                     let i_name = spilt.get(1).unwrap().clone();
-//
-//                     if imports.contains(&i_name) {
-//                         return err_message(
-//                             file_name,
-//                             index,
-//                             format!(
-//                                 "'#IMPORT' tries to import already imported file. ({})",
-//                                 i_name
-//                             )
-//                             .as_str(),
-//                         );
-//                     }
-//
-//                     imports.push(i_name.clone());
-//                 }
-//                 else {
-//                     return err_message(
-//                         file_name,
-//                         index,
-//                         "'#IMPORT' should only have 1 arguments.",
-//                     );
-//                 }
-//             }
-//
-//             line.drain(0..line.len());
-//         }
-//     }
-//
-//     Ok(imports)
-// }
-//
-// pub fn pre_process(path: &str, lines: &mut Vec<String>) -> Result<String, String> {
-//     let file = Path::new(path);
-//     let mut file_name = file.file_name().unwrap().to_str().unwrap().to_string();
-//     file_name.drain((file_name.len() - file.extension().unwrap().len() - 1)..file_name.len());
-//     let mut namespace = (file_name, false);
-//
-//     let mut define_map = HashMap::new();
-//     let mut ac = AhoCorasick::new(&[] as &[String]);
-//
-//     for (index, line) in lines.iter_mut().enumerate() {
-//         if line.starts_with("#") {
-//             if line.starts_with("#NAMESPACE") || line.starts_with("#DEFINE") {
-//                 let spilt: Vec<&str> = line.split_whitespace().collect();
-//                 let spilt: Vec<String> = spilt.iter().map(|s| s.to_string()).collect();
-//
-//                 //TODO Regex namespace to make sure it falls within the criteria.
-//                 if line.starts_with("#NAMESPACE") {
-//                     if spilt.len() == 2 {
-//                         if namespace.1 {
-//                             return err_message(path, index, "'#NAMESPACE' was already used.");
-//                         }
-//
-//                         namespace.0 = spilt.get(1).unwrap().clone();
-//                         namespace.1 = true;
-//                     }
-//                     else {
-//                         return err_message(
-//                             path,
-//                             index,
-//                             "'#NAMESPACE' should only have one argument.",
-//                         );
-//                     }
-//                 }
-//                 else if line.starts_with("#DEFINE") {
-//                     if spilt.len() >= 3 {
-//                         line.drain(0.."#DEFINE".len());
-//
-//                         //TODO Should this trim end?
-//                         let mut var = line.trim_start().to_string();
-//                         var.drain(0..spilt.get(1).unwrap().len());
-//                         let var = var.trim_start().to_string();
-//
-//                         define_map.insert(spilt.get(1).unwrap().clone(), var);
-//
-//                         let patterns = define_map.keys();
-//                         ac = AhoCorasick::new(patterns);
-//                     }
-//                     else {
-//                         return err_message(
-//                             path,
-//                             index,
-//                             "'#DEFINE' should have at least 2 arguments.",
-//                         );
-//                     }
-//                 }
-//                 else {
-//                     return err_message(path, index, "Pre-Processor statement is not recognised.");
-//                 }
-//
-//                 line.drain(0..line.len());
-//             }
-//         }
-//         else {
-//             // Find
-//             let mut matches = Vec::new();
-//             for mat in ac.find_iter(line) {
-//                 matches.push((mat.pattern(), mat.start(), mat.end()));
-//             }
-//
-//             // Replace
-//             let values: Vec<&String> = define_map.values().collect();
-//             for mat in matches.iter() {
-//                 line.replace_range(mat.1..mat.2, values.get(mat.0).unwrap().as_str());
-//             }
-//         }
-//     }
-//
-//     Ok(namespace.0)
-// }
-
-//TODO MOVE
-//TODO Compile.
-// pub fn compile() -> Result<(Vec<Instructions>, HashMap<Tag, TagMap>), String> {
-//     //let mut variables = HashMap::new(); // Hashmap to keep track of variable types.
-//
-//     Ok((Vec::new(), HashMap::new()))
-// }
-
-//TODO Linker Check.
-// pub fn linker() {}
-
-//TODO Safety Checks.
-// pub fn safety_checks() {}
-
-//TODO Optimize.
-// pub fn optimize() {}
-//</editor-fold>

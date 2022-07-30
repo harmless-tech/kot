@@ -13,11 +13,7 @@ static LOG_PATH: &str = "build/kot.log";
 //TODO: Only allow logging when an argument is passed in to enable it.
 pub fn setup_log() -> log4rs::Handle {
     // Cleanup
-    let cleanup_log: bool;
-    match remove_file(LOG_PATH) {
-        Ok(_) => cleanup_log = true,
-        Err(_) => cleanup_log = false,
-    }
+    let cleanup_log: bool = remove_file(LOG_PATH).is_ok();
 
     let filter = match DEBUG_BUILD {
         true => LevelFilter::Trace,
@@ -65,5 +61,5 @@ pub fn setup_log() -> log4rs::Handle {
         warn!("Previous log file could not be deleted. This could become a problem if the log file gets very long.")
     }
 
-    return handle;
+    handle
 }

@@ -17,6 +17,7 @@ path = "src/main.rs"
 
 [dependencies]
 brotli = "3.3.4"
+clap = "3.2.15"
 kot = { path = "crates/kot" }
 kot_compiler = { path = "crates/kot_compiler" }
 log = "0.4.17"
@@ -29,3 +30,4 @@ members = ["crates/*"]
 opt-level = 3
 lto = true
 codegen-units = 1
+strip = true
