@@ -25,6 +25,13 @@ jobs:
           key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Docker Setup QEMU
         uses: docker/setup-qemu-action@v2
+      - name: Docker CMD (Test)
+        run: |
+          docker run --rm \
+          --platform linux/arm64 \
+          -v $(pwd):/build -w /build \
+          rust:latest \
+          bash -c 'ls'
       - name: Docker CMD
         run: |
           docker run --rm \
