@@ -60,7 +60,7 @@ jobs:
         run: |
           export SDKROOT=$(xcrun -sdk macosx --show-sdk-path)
           export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx --show-sdk-platform-version)
-      # Cannot test aarch64 macos binaries
+      # Cannot test aarch64 MacOS binaries
       - name: Build
         run: cargo build --verbose --workspace --target=aarch64-apple-darwin
       - name: Artifact
@@ -68,6 +68,6 @@ jobs:
         with:
           name: artifacts-mac-arm64
           path: |
-            impls/rust/target/debug/kot
+            impls/rust/target/aarch64-apple-darwin/debug/kot
 
 # No windows aarch64
