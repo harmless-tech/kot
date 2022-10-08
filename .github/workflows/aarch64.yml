@@ -17,25 +17,22 @@ defaults:
 jobs:
   build-linux-aarch64:
     runs-on: ubuntu-latest
-    container:
-      image: rust:latest
-      options: |
-        --platform linux/arm64v8
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
+          path: | # Cannot cache cargo files, since logic is ran in a container.
             target
           key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Rust Version
-        run: rustc --version
-      - name: Run tests
-        run: cargo test --verbose --workspace
-      - name: Build
-        run: cargo build --verbose --workspace
+      - name: Docker Setup QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Docker CMD
+        run: |
+          docker run --rm \
+          --platform linux/arm64v8 \
+          -v $(pwd):/build -w /build \
+          rust:latest \
+          bash -c 'rustc --version && cargo test --verbose --workspace && cargo build --verbose --workspace'
       - name: Artifact
         uses: actions/upload-artifact@v2
         with:
