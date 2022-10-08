@@ -25,18 +25,11 @@ jobs:
           key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Docker Setup QEMU
         uses: docker/setup-qemu-action@v2
-      - name: Docker CMD (Test)
-        run: |
-          docker run --rm \
-          --platform linux/arm64 \
-          -v ${{ github.workspace }}:/build -w /build/impls/rust \
-          rust:latest \
-          bash -c 'ls'
       - name: Docker CMD
         run: |
           docker run --rm \
           --platform linux/arm64 \
-          -v $(pwd)../..:/build -w /build/impls/rust \
+          -v ${{ github.workspace }}:/build -w /build/impls/rust \
           rust:latest \
           bash -c 'rustc --version && cargo test --verbose --workspace && cargo build --verbose --workspace'
       - name: Artifact
@@ -67,8 +60,7 @@ jobs:
         run: |
           export SDKROOT=$(xcrun -sdk macosx --show-sdk-path)
           export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx --show-sdk-platform-version)
-      - name: Run tests
-        run: cargo test --verbose --workspace --target=aarch64-apple-darwin
+      # Cannot test aarch64 macos binaries
       - name: Build
         run: cargo build --verbose --workspace --target=aarch64-apple-darwin
       - name: Artifact
