@@ -25,18 +25,11 @@ jobs:
           key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Docker Setup QEMU
         uses: docker/setup-qemu-action@v2
-      - name: Docker CMD (Test)
-        run: |
-          docker run --rm \
-          --platform linux/arm64 \
-          -v $(pwd)/../..:/build -w /build/impls/rust \
-          rust:latest \
-          bash -c 'ls'
       - name: Docker CMD
         run: |
           docker run --rm \
           --platform linux/arm64 \
-          -v $(pwd):/build -w /build \
+          -v $(pwd)../..:/build -w /build/impls/rust \
           rust:latest \
           bash -c 'rustc --version && cargo test --verbose --workspace && cargo build --verbose --workspace'
       - name: Artifact
@@ -46,30 +39,36 @@ jobs:
           path: |
             impls/rust/target/debug/kot
 
-#  build-macos-aarch64:
-#    runs-on: macos-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - uses: actions/cache@v2
-#        with:
-#          path: |
-#            ~/.cargo/registry
-#            ~/.cargo/git
-#            target
-#          key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
-#      - name: Update Rust
-#        run: rustup update
-#      - name: Rust Version
-#        run: rustc --version
-#      - name: Run tests
-#        run: cargo test --verbose --workspace
-#      - name: Build
-#        run: cargo build --verbose --workspace
-#      - name: Artifact
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: artifacts-mac-arm64
-#          path: |
-#            impls/rust/target/debug/kot
+  build-macos-aarch64:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Update Rust
+        run: rustup update
+      - name: Rust Version
+        run: rustc --version
+      - name: Add Rust target
+        run: rustup target add aarch64-apple-darwin
+      - name: MacOS SDK
+        run: |
+          export SDKROOT=$(xcrun -sdk macosx --show-sdk-path)
+          export MACOSX_DEPLOYMENT_TARGET=$(xcrun -sdk macosx --show-sdk-platform-version)
+      - name: Run tests
+        run: cargo test --verbose --workspace --target=aarch64-apple-darwin
+      - name: Build
+        run: cargo build --verbose --workspace --target=aarch64-apple-darwin
+      - name: Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts-mac-arm64
+          path: |
+            impls/rust/target/debug/kot
 
 # No windows aarch64
