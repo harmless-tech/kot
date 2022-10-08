@@ -29,7 +29,7 @@ jobs:
         run: |
           docker run --rm \
           --platform linux/arm64 \
-          -v $(pwd):/build -w /build \
+          -v $(pwd)/../..:/build -w /build/impls/rust \
           rust:latest \
           bash -c 'ls'
       - name: Docker CMD
