@@ -1,0 +1,72 @@
+name: Rust Build and Test (Arm64)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+defaults:
+  run:
+    working-directory: ./impls/rust
+
+jobs:
+  build-linux-aarch64:
+    runs-on: ubuntu-latest
+    container:
+      image: rust:latest
+      options: |
+        --platform linux/arm64v8
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Rust Version
+        run: rustc --version
+      - name: Run tests
+        run: cargo test --verbose --workspace
+      - name: Build
+        run: cargo build --verbose --workspace
+      - name: Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts-lin-aarch64
+          path: |
+            impls/rust/target/debug/kot
+
+#  build-macos-aarch64:
+#    runs-on: macos-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.cargo/registry
+#            ~/.cargo/git
+#            target
+#          key: ${{ runner.os }}-aarch64-cargo-${{ hashFiles('**/Cargo.lock') }}
+#      - name: Update Rust
+#        run: rustup update
+#      - name: Rust Version
+#        run: rustc --version
+#      - name: Run tests
+#        run: cargo test --verbose --workspace
+#      - name: Build
+#        run: cargo build --verbose --workspace
+#      - name: Artifact
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: artifacts-mac-arm64
+#          path: |
+#            impls/rust/target/debug/kot
+
+# No windows aarch64
