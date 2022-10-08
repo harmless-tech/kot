@@ -17,8 +17,8 @@ jobs:
   build-linux-aarch64:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: | # Cannot cache cargo files, since build logic is ran in a container.
             target
@@ -31,19 +31,19 @@ jobs:
           --platform linux/arm64 \
           -v ${{ github.workspace }}:/build -w /build/impls/rust \
           rust:latest \
-          bash -c 'rustc --version && cargo test --verbose --workspace && cargo build --verbose --workspace'
+          bash -c 'rustc --version && cargo test --verbose --workspace --all-features && cargo build --verbose --workspace'
       - name: Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: artifacts-lin-aarch64
+          name: artifacts-linux-aarch64
           path: |
             impls/rust/target/debug/kot
 
   build-macos-aarch64:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
         with:
           path: |
             ~/.cargo/registry
@@ -64,9 +64,9 @@ jobs:
       - name: Build
         run: cargo build --verbose --workspace --target=aarch64-apple-darwin
       - name: Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
-          name: artifacts-mac-arm64
+          name: artifacts-macos-aarch64
           path: |
             impls/rust/target/aarch64-apple-darwin/debug/kot
 
