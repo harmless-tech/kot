@@ -1,0 +1,63 @@
+const PI: f64 = 3.41;
+const arr: [u8] = [23, 23, 23, 23];
+
+type Tup = (u64, u64)
+type TestObject = {
+    fi: u64
+}
+
+// Define a operator on TestObject
+def +(o1, o2): TestObject {
+    o1.fi + o2.fi
+}
+
+// Like rust enums
+enum Select {
+    Mouse
+    Keyboard(u32)
+    Turkey
+}
+
+// Can be considered a TestObject, str, or Select
+type T2 : TestObject, str, Select = {
+    fi2: u64
+    fi3: u64, fi4: TestObject // use comma to split instead of whitespace
+}
+
+// Define new T2
+const a = T2 {
+    // define testobject fields (required)
+    def TestObject { fi: 3 }
+    def str "Hello"
+    def Select Mouse
+    fi2: 23
+    fi3: 43
+    fi4: { fi: 4 }
+}
+
+// Can only access TestObject fields if you cast it
+const b = (a as TestObject).fi;
+
+// get string value
+const c = (a as str);
+
+// Only accept array of 4 elements
+fn u64_sum(arr: [u8; 4]): Option<u64> {
+    return for i in arr where a = 0 {
+        // Can only add types that are the same
+        a += i as u64;
+    }
+}
+
+// Generics only work with operator types
+// Type must be have an add operator on them
+fn sum<T, V>(arr: [T; 4]): Option<T> where T:+:-:==, V:+:==:>= {
+    for i in arr where a = 0 {
+        a += i;
+    }
+}
+
+// Accepts in TestObject or any other object that inherits TestObject
+// returns ()
+fn t_obj(o: TestObject) {
+}

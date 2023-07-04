@@ -1,0 +1,18 @@
+[package]
+name = "kot"
+version = "0.0.1"
+edition = "2021"
+authors = ["harmless-tech"]
+description = "Download prebuilt crate binaries for many different platforms"
+readme = "../README.md"
+license = "MIT"
+repository = "https://github.com/harmless-tech/kot"
+
+[[bin]]
+name = "kot"
+path = "src/main.rs"
+required-features = []
+
+# TODO: Lib?
+
+[dependencies]

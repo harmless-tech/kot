@@ -1,0 +1,44 @@
+// Eval top to bottom
+// Everything is immmutable and must return
+
+use "new_idea.koi" as koi;
+
+// Exported and cannot be defined again.
+data t5: u16 = 25;
+
+// Now have koi and koith
+use "new_idea.koi" as koith
+// Cannot redefine use
+//use "new_idea.koi" as koi
+
+// let can be redefeined 
+let abc: u32 = 1;
+let abc: str = "String Time!";
+
+// Make a new array where 7 is appended to the end
+let arr: [u8] =  koi::arr @ [7];
+
+// Do not need a semi colon if {} are used.
+// $ is a accumulator
+let sum: u64 = for i in arr { $ += i as u64 }
+// or, a is a accumulator and starts at 23
+// Accumulator takes type from sum
+let sum: u64 = for i in arr where a = 24 { $ += i as u64 }
+
+// for loops can only iter
+// $ not assigned so returns None
+for i in arr { break }
+for i in 0..2 { break }
+for i in 0..=2 { break }
+
+let aaa: str = { "String" }
+
+// Match last element in array
+let a = match arr[-0] {
+    abc
+}
+
+let sum: u64 = for i in std::reverse(arr) { $ += i as u64 }
+
+// Rust optional type
+data hello: Optional<u64> = None // or Some(NUMBER)

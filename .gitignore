@@ -1,1 +1,8 @@
+.fleet
+.idea
+.vscode
+.vs
+
 .DS_Store
+
+target/

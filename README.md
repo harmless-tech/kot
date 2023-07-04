@@ -1,3 +1,3 @@
 # kot
 
-A data format.
+A toy language.
