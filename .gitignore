@@ -4,5 +4,6 @@
 .vs
 
 .DS_Store
+*.tmp
 
 target/

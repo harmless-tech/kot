@@ -10,9 +10,13 @@ repository = "https://github.com/harmless-tech/kot"
 
 [[bin]]
 name = "kot"
-path = "src/main.rs"
+path = "src/bin/main.rs"
 required-features = []
+
+[lib]
+path = "src/lib.rs"
 
 # TODO: Lib?
 
 [dependencies]
+lazy-regex = "2.5.0"

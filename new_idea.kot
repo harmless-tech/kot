@@ -3,8 +3,8 @@
 
 use "new_idea.koi" as koi;
 
-// Exported and cannot be defined again.
-data t5: u16 = 25;
+// Cannot be defined again.
+val t5: u16 = 25;
 
 // Now have koi and koith
 use "new_idea.koi" as koith
@@ -16,7 +16,7 @@ let abc: u32 = 1;
 let abc: str = "String Time!";
 
 // Make a new array where 7 is appended to the end
-let arr: [u8] =  koi::arr @ [7];
+let arr: [u8] =  koi::arr + [7];
 
 // Do not need a semi colon if {} are used.
 // $ is a accumulator
@@ -33,12 +33,23 @@ for i in 0..=2 { break }
 
 let aaa: str = { "String" }
 
+let string: str = "
+All Strings are 'raw'
+";
+
+let string: str = ##"
+    All Strings are "" #""#
+"##;
+
 // Match last element in array
+// Later
 let a = match arr[-0] {
     abc
 }
 
+let void: () = ();
+
 let sum: u64 = for i in std::reverse(arr) { $ += i as u64 }
 
 // Rust optional type
-data hello: Optional<u64> = None // or Some(NUMBER)
+val hello: Optional<u64> = None // or Some(NUMBER)
