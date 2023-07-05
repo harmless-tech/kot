@@ -1,8 +1,11 @@
+// Everything is public
+
+// Must be known at compile time.
 const PI: f64 = 3.41;
 const arr: [u8] = [23, 23, 23, 23];
 
-type Tup = (u64, u64)
-type TestObject = {
+typedef Tup = (u64, u64)
+typedef TestObject = {
     fi: u64
 }
 
@@ -18,8 +21,13 @@ enum Select {
     Turkey
 }
 
+// Generic TTY where T must have ==
+enum TTY<T:==> {
+    Opt(T)
+}
+
 // Can be considered a TestObject, str, or Select
-type T2 : TestObject, str, Select = {
+typedef T2 : TestObject, str, Select = {
     fi2: u64
     fi3: u64, fi4: TestObject // use comma to split instead of whitespace
 }
@@ -51,7 +59,8 @@ fn u64_sum(arr: [u8; 4]): Option<u64> {
 
 // Generics only work with operator types
 // Type must be have an add operator on them
-fn sum<T, V>(arr: [T; 4]): Option<T> where T:+:-:==, V:+:==:>= {
+// If you have == and >, then you get >= for free
+fn sum<T:+:-:==, V:+:==:>>(arr: [T; 4]): Option<T> {
     for i in arr where a = 0 {
         a += i;
     }

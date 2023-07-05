@@ -21,8 +21,8 @@ fn main() {
         dbg!(c);
     }
 
-    let s = "100";
-    if let Some((cap, _, _, _, _, _)) =
+    let s = "100_u64;";
+    if let Some((_, cap, _, _, _, _)) =
         regex_captures!(r"^((\d+_?)+\.?(\d+_?)+([ufsize]+\d{0,3})?)(;|\s|$)", s)
     {
         println!("{cap}");

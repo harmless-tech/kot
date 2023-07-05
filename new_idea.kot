@@ -1,7 +1,32 @@
 // Eval top to bottom
 // Everything is immmutable and must return
+// Everything is private as default
 
-use "new_idea.koi" as koi;
+
+// Import new_idea.koi as a module.
+const koi: mod = use "new_idea.koi";
+
+// define - on koi TestObject, only for this file.
+def -(o1, o2): koi::TestObject {
+    o1.fi - o2.fi
+}
+// override define + on koi TestObject, only for this file.
+override def +(o1, o2): koi::TestObject {
+    o1.fi - o2.fi
+}
+
+const koi2: mod = use "new_idea_2.koi";
+// Same thing, uses - from upper_koi since - in this file does not use override
+let sigh: () = koi::t_obj(koi2::upper_koi::TestObject);
+let sigh: () = koi::t_obj(koi2::TestObject);
+
+let t: type = koi2 as type; // Only works for primitive types like usize, str, (), mod, and type
+if t == mod {
+    val _: str = "t's type is mod (module)";
+}
+
+// anon functions
+let function: fn(u64): () = fn(obj: u64) { return (); }
 
 // Cannot be defined again.
 val t5: u16 = 25;
@@ -15,8 +40,10 @@ use "new_idea.koi" as koith
 let abc: u32 = 1;
 let abc: str = "String Time!";
 
-// Make a new array where 7 is appended to the end
+// Make a new array where 7 is appended to the end (Like slice)
 let arr: [u8] =  koi::arr + [7];
+/* Array can have only 3 elements */
+let arr: [u8; 3] =  [1, 2, 3];
 
 // Do not need a semi colon if {} are used.
 // $ is a accumulator
@@ -47,9 +74,26 @@ let a = match arr[-0] {
     abc
 }
 
+let obj: Option<u64> = None;
+// Cannot return anything.
+// Can destructure enums.
+if let Some(o) = obj {
+    val pizza: u64 = o;
+}
+
 let void: () = ();
 
 let sum: u64 = for i in std::reverse(arr) { $ += i as u64 }
 
 // Rust optional type
-val hello: Optional<u64> = None // or Some(NUMBER)
+val hello: Option<u64> = None // or Some(NUMBER)
+
+// In a test block assert(bool) is defined.
+test {
+    assert(sum == 23_u64)
+}
+
+// Optional name
+test run_tests {
+
+}
