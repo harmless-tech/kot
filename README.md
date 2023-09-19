@@ -1,3 +1,3 @@
 # kot
 
-A toy language.
+A command runner.

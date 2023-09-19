@@ -1,8 +1,51 @@
-[workspace]
-members = ["vm"]
+[package]
+name = "kot"
+version = "0.1.0-dev"
+edition = "2021"
+authors = ["harmless-tech"]
+description = "A command runner"
+readme = "README.md"
+license = "MIT"
+repository = "https://github.com/harmless-tech/kot"
+categories = ["command-line-utilities", "development-tools"]
+keywords = ["command-line", "task", "runner", "development", "utility"]
+#rust-version = "1.70"
+include = [
+    "src/",
+    "Cargo.lock",
+    "Cargo.toml",
+    "LICENSE",
+    "README.md"
+]
+
+[dependencies]
+
+[features]
+default = ["i64"]
+i64 = []
 
 [profile.release]
 opt-level = 3
 lto = true
 codegen-units = 1
 strip = true
+panic = "abort"
+
+[profile.small]
+inherits = "release"
+opt-level = "s"
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ target }.tar.gz"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-url = "{ repo }/releases/download/v{ version }/{ target }.zip"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "zip"
+
+[package.metadata.binstall.overrides.aarch64-pc-windows-msvc]
+pkg-url = "{ repo }/releases/download/v{ version }/{ target }.zip"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "zip"
