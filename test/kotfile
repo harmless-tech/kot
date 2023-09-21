@@ -1,0 +1,42 @@
+// Set the parser version to zero, must be the first line in the file.
+// kotfiles eval top to bottom
+.kot.file_version = 0
+
+// Platform group. Only run this line on unix platforms.
+// Depends on the kot binary not the OS itself. (Running the x86_64 binary on a m1 mac will run x86_64 lines)
+@[unix && (x86_64 || aarch64)] .shell = "/bin/zsh -c" // Set the shell to zsh
+// Default shells: MacOS - zsh, Linux - sh, BSD - sh, Windows - pwsh??
+
+extern const HEllo = "" // Cannot be redefined below, but can be by the entry args
+extern let Hell = "" // Can be redefined below and by entry args
+
+const regex = r"" // Regex pattern
+let reg = regex("") // call regex on value
+let _ = reg.0 // Get cap group 0
+let _ = reg.1 // Get cap group 1
+let _ = reg.result // Get regex result (true|false)
+
+// Only run this line on macos and linux
+@[macos || linux] let h = ""
+
+let cmd = `CMD` // Run a cmd
+let _ = cmd.stdout
+let _ = cmd.stderr
+let _ = cmd.code
+
+const aa = ##" "  " "## // Allow for quote marks in strings, since you cannot escape them
+
+.env.var.HELLO += "23" // Append 23 to the env var HELLO
+
+.args.switch.long = "release" // --release
+.args.switch.short = "i" // -i
+
+const total_cmd = .args.cmd // Return the whole cmd
+const pos_0 = .args.0 // get the zero argument (EX: For 'kot test run' the first arg will be kot)
+const pos_1 = .args.1 // get the first argument (EX: For 'kot test run' the first arg will be test)
+const val = .args.flag
+
+let c = "c"
+let a = "{{c}}" // a == c
+
+^id()
