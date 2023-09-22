@@ -19,7 +19,7 @@ include = [
 ]
 
 [dependencies]
-lazy-regex = "3.0.2"
+#lazy-regex = "3.0.2"
 
 [features]
 default = ["i64"]
@@ -30,7 +30,6 @@ opt-level = 3
 lto = true
 codegen-units = 1
 strip = true
-panic = "abort"
 
 [profile.small]
 inherits = "release"

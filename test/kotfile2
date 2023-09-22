@@ -1,8 +1,10 @@
 # Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
 # Version: --kot version
 
-# Parser directive (File format version)
-#kot version=1
+# Config
+# Allows kot to cache the ast of this file under .kotfile.cache.
+# Tells kot the max amount of cmds to run in parallel.
+#kot cacheable=true,threads=4
 
 .os macos linux { let kot.shell = "/bin/zsh -c" }
 .family windows { let kot.shell = "pwsh /NOLOGO /C" }
@@ -59,7 +61,7 @@ const jump = "jump" # Cannot be rebound
     }
 
     .cmd 23 { # Subcommand (Inherits args from above)
-        let p = .parallel (no_fail: true) { # Each command is ran then any vars are added to the object (Do not fail if one of the commands below fails)
+        let p = .parallel (no_fail: true) { # Runs commands in parallel maxing out at however many cpu cores there are. (Use '#kot threads=$NUMBER' to set manually)
             let a = `cargo +nightly fmt --check`
             `cargo clippy --all-targets --locked --workspace -- -D warnings` # binding is discarded
 

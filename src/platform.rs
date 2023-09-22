@@ -1,8 +1,8 @@
 // TODO: Block Building on unsupported platforms?
 
-pub static SUPPORTED_OSES: [&str; 3] = ["windows", "macos", "linux"];
+pub static SUPPORTED_OSES: [&str; 4] = ["windows", "macos", "linux", "freebsd"];
 
-pub static SUPPORTED_ARCHES: [&str; 3] = ["x86_64", "arm", "aarch64"];
+pub static SUPPORTED_ARCHES: [&str; 5] = ["x86_64", "arm", "aarch64", "riscv64", "s390x"];
 
 pub static SUPPORTED_OS_FAMILIES: [&str; 2] = ["windows", "unix"];
 
@@ -15,6 +15,8 @@ pub mod current {
     pub static OS: &str = "macos";
     #[cfg(target_os = "linux")]
     pub static OS: &str = "linux";
+    #[cfg(target_os = "freebsd")]
+    pub static OS: &str = "freebsd";
 
     #[cfg(target_family = "windows")]
     pub static OS_FAMILY: &str = "windows";
@@ -27,4 +29,8 @@ pub mod current {
     pub static ARCH: &str = "arm";
     #[cfg(target_arch = "aarch64")]
     pub static ARCH: &str = "aarch64";
+    #[cfg(target_arch = "riscv64")]
+    pub static ARCH: &str = "riscv64";
+    #[cfg(target_arch = "s390x")]
+    pub static ARCH: &str = "s390x";
 }
