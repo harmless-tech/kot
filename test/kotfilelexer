@@ -6,8 +6,8 @@
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel.
-# Tells kot not to do {{}} substitution in strings.
-#kot cacheable=true,threads=4,pure_raw_strings=true
+# Tells kot to do {{}} substitution in strings.
+#kot cacheable=true,threads=4,pure_raw_strings=false
 
 .triplet aarch64-apple-darwin { }
 .os macos linux { let kot.shell =  }
@@ -90,3 +90,5 @@ let abc
 # Logic?
 # Only logical and compare ops for now. (==, !=, <, >, <=, >=, &&, ||, !)
 # let logic = 1 + 2 - 3 * 100 / 10 % 40 && 1
+
+"\"\"   \"\""

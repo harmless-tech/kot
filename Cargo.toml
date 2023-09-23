@@ -19,7 +19,7 @@ include = [
 ]
 
 [dependencies]
-lazy-regex = "3.0.2"
+#lazy-regex = "3.0.2"
 
 [features]
 default = ["i64"]

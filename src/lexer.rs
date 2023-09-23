@@ -1,5 +1,3 @@
-use lazy_regex::regex_captures;
-
 /// (Token, (Line, Col)))
 pub type ExToken = (Token, (usize, usize));
 
@@ -149,23 +147,36 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
             }
             ('"', next) => {
                 // String
-                // TODO: Remove regex!!!
                 if next == '"' {
                     token!(String, "".to_string());
                     index += 2;
                     col += 2;
                 }
                 else {
-                    let word: String = contents[index..contents.len()].iter().collect();
-                    let (c1, c2, _) = match regex_captures!(r#""(([^\\"\n]|\\.)*)""#, word.as_str())
-                    {
-                        None => panic!("String at {line}:{col} could not be captured."),
-                        Some(c) => c,
-                    };
+                    let mut str_index = 0_usize;
+                    let mut backslash = false;
+                    loop {
+                        str_index += 1;
+                        match peak!(str_index) {
+                            '"' => {
+                                if !backslash {
+                                    break;
+                                }
+                                backslash = false;
+                            }
+                            '\\' => {
+                                backslash = true;
+                            }
+                            '\n' => panic!("String at {line}:{col} is malformed. Newline before an ending \" was detected."),
+                            '\0' => panic!("String at {line}:{col} is malformed. EOF before an ending \" was detected."),
+                            _ => {}
+                        }
+                    }
 
-                    token!(String, c2.to_string());
-                    index += c1.len();
-                    col += c1.len();
+                    let word: String = contents[(index + 1)..(index + str_index)].iter().collect();
+                    token!(String, word);
+                    index += str_index + 1;
+                    col = str_index + 1;
                 }
             }
             ('r', '#' | '"') => {
