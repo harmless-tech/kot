@@ -163,6 +163,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                             '\\' => {
                                 backslash = true;
                             }
+                            '\r' => {}
                             '\n' => {
                                 t_line += 1;
                                 t_col = 0;
