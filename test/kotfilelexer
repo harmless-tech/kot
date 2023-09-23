@@ -1,13 +1,14 @@
 # Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
-# Version: --kot version
+# Version: --kot version=true
 
 # {{}} substitution can only contain variable names!
 
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
-# Tells kot the max amount of cmds to run in parallel.
+# Tells kot the max amount of cmds to run in parallel. (Kot itself will always use a max of two threads unless build with --no-default-features)
 # Tells kot to not do {{}} substitution in raw strings.
-#kot cacheable=true,threads=4,pure_raw_strings=true
+# Tells kot to only run this file if it supports i64 as its int type.
+#kot cacheable=true,children=4,pure_raw_strings=true,require_i64=true
 
 .triplet aarch64-apple-darwin { }
 .os macos linux { let kot.shell =  }
@@ -32,6 +33,10 @@ let sr = r#"""
 
 let cmd = `echo 20`
 cmd
+
+guard if let ll = kot.dev.none {
+    .panic "Wrong!"
+}
 
 .regex regex (gmxUsi) { "h{0}" }
 let m1 = regex.match("hello").0

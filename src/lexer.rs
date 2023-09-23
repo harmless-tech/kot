@@ -1,5 +1,7 @@
 /// (Token, (Line, Col)))
 pub type ExToken = (Token, (usize, usize));
+/// (Config, (Line, Col)))
+pub type ExConfig = (String, (usize, usize));
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Token {
@@ -32,6 +34,7 @@ pub enum Token {
 
     Let,
     Const,
+    Guard,
     If,
     Else,
     True,
@@ -42,11 +45,11 @@ pub enum Token {
 }
 
 /// (Vec of Tokens, Vec of configs)
-pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
+pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
     let contents: Vec<char> = content.chars().collect();
 
     let mut tokens: Vec<ExToken> = Vec::new();
-    let mut config: Vec<String> = Vec::new();
+    let mut config: Vec<ExConfig> = Vec::new();
 
     let mut index = 0_usize;
     let mut line = 1_usize;
@@ -104,7 +107,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                 // Comment
                 let i = skip_comment(&contents, index);
                 if next == 'k' && peak!(2) == 'o' && peak!(3) == 't' && peak!(4) == ' ' {
-                    config.push(contents[(index + 5)..i].iter().collect())
+                    config.push((contents[(index + 5)..i].iter().collect(), (line, col)))
                 }
                 index = i;
             }
@@ -324,6 +327,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                         match word.as_str() {
                             "let" => token!(Let),
                             "const" => token!(Const),
+                            "guard" => token!(Guard),
                             "if" => token!(If),
                             "else" => token!(Else),
                             "true" => token!(True),
@@ -409,7 +413,7 @@ mod test {
             }
 
             for (l, c) in l.1.iter().zip(c) {
-                assert!(l.eq(&c.to_string()));
+                assert!(l.0.eq(&c.to_string()));
             }
         }};
     }

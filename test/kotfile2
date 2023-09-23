@@ -1,15 +1,15 @@
 # Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
-# Version: --kot version
+# Version: --kot version=true
 
 # {{}} substitution can only contain variable names!
 
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel.
-#kot cacheable=true,threads=4
+#kot cacheable=true,children=4
 
-.os macos linux { let kot.shell = "/bin/zsh -c" }
-.family windows { let kot.shell = "pwsh /NOLOGO /C" }
+.os macos linux { let kot.shell = "/bin/zsh -c" } # Will be split by spaces.
+.family windows { let kot.shell = "pwsh -NoLogo -Command" }
 .arch x86_64 { kot.env.AMD64 = true }
 
 # kot.platform.triplet (rust triplets)
@@ -27,6 +27,7 @@ cmd
 let m1 = regex.match("hello").0
 let m1 = regex.match("hello").result
 
+# Kot does not panic on extra args
 let all_args = .args { # Cannot do --kot
     -i: arg,  # Since - args can be combined together if these two are combined then
     -v: arg,  # it will take like this -> -iv [I] [V], -vi [V] [I], -iv=[I] [V], -vi=[V] [I]
@@ -39,6 +40,7 @@ let all_args = .args { # Cannot do --kot
     ps0: pos(0),
     ps1: pos(1),
     ps2: pos(2, required: true, type: int, con: $ < 0), # Since this is required, then others are also required
+    --: last(required: true)
 }
 
 # Functions can return an object

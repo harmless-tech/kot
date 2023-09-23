@@ -1,5 +1,5 @@
 use crate::Int;
-use std::collections::HashMap;
+use rustc_hash::FxHashMap;
 
 // TODO: Expand and fix this while doing the parser.
 
@@ -18,7 +18,7 @@ pub enum Types {
     Command(String),
     Integer(Int),
     Regex(), // TODO
-    Object(HashMap<String, Types>),
+    Object(FxHashMap<String, Types>),
 }
 
 pub enum DotExTypes {
