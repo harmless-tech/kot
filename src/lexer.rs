@@ -391,10 +391,41 @@ fn get_word(contents: &[char], mut index: usize) -> usize {
     index
 }
 
+// TODO: Improve lexer testing.
 #[cfg(test)]
 mod test {
-    use crate::lexer::lex;
+    use crate::lexer::{lex, Token};
     use std::fs;
+
+    macro_rules! assert_lexer {
+        ($t1:expr, $c1:expr, $l1:expr) => {{
+            let t: &[Token] = &$t1;
+            let c: &[&str] = &$c1;
+            let l = lex($l1);
+
+            for (l, t) in l.0.iter().zip(t) {
+                assert!(l.0.eq(&t));
+            }
+
+            for (l, c) in l.1.iter().zip(c) {
+                assert!(l.eq(&c.to_string()));
+            }
+        }};
+    }
+
+    #[test]
+    fn lex_raw_str_1() {
+        assert_lexer!(
+            [
+                Token::Let,
+                Token::Ident("raw".to_string()),
+                Token::Assign,
+                Token::RawString(r#"""#.to_string())
+            ],
+            [],
+            r###"let raw = r##"""##"###
+        );
+    }
 
     #[test]
     fn lex_kotfilelexer() {
