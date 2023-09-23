@@ -1,6 +1,8 @@
 # Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
 # Version: --kot version
 
+# {{}} substitution can only contain variable names!
+
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel.

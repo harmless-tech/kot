@@ -1,10 +1,13 @@
 # Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
 # Version: --kot version
 
+# {{}} substitution can only contain variable names!
+
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel.
-#kot cacheable=true,threads=4
+# Tells kot not to do {{}} substitution in strings.
+#kot cacheable=true,threads=4,pure_raw_strings=true
 
 .triplet aarch64-apple-darwin { }
 .os macos linux { let kot.shell =  }
@@ -16,8 +19,16 @@
 # kot.platform.family
 # kot.platform.arch
 
-let string =
-let string = r##
+let aaa = ""
+let abbb = "str\""
+let one = "oneee"
+
+let quote = r#"""""#
+let string = r##"""abc"abc"""##
+let sr = r""
+let sr = r#"""
+
+"""#
 
 let cmd =
 cmd
@@ -75,8 +86,6 @@ const jump =  # Cannot be rebound
 let abc=23
 
 let abc
-
-let sr = r##""##
 
 # Logic?
 # Only logical and compare ops for now. (==, !=, <, >, <=, >=, &&, ||, !)

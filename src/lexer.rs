@@ -1,3 +1,5 @@
+use lazy_regex::regex_captures;
+
 /// (Token, (Line, Col)))
 pub type ExToken = (Token, (usize, usize));
 
@@ -8,6 +10,7 @@ pub enum Token {
     Command(String),
     Int(String),
     String(String),
+    RawString(String),
     Eof,
 
     LParen,
@@ -70,22 +73,22 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
             col += 1;
         }};
     }
-    macro_rules! peak_i {
+    macro_rules! peak_ref {
         ($e:expr) => {
-            *match contents.get(index + $e) {
+            match contents.get(index + $e) {
                 Some(c) => c,
                 None => &'\0',
             }
         };
     }
     macro_rules! peak {
-        () => {
-            peak_i!(1)
+        ($e:expr) => {
+            *peak_ref!($e)
         };
     }
     macro_rules! token_peak {
-        ($e:expr, $x1:ident, $x2:ident) => {
-            if peak!() == $e {
+        ($next:ident, $e:expr, $x1:ident | $x2:ident) => {
+            if $next == $e {
                 token!($x1);
                 index += 2;
                 col += 2;
@@ -98,61 +101,147 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
 
     while index < content.len() {
         let c = &contents[index];
-        match c {
-            '#' => {
+        match (*c, peak!(1)) {
+            ('#', next) => {
                 // Comment
                 let i = skip_comment(&contents, index);
-                if peak_i!(1) == 'k' && peak_i!(2) == 'o' && peak_i!(3) == 't' && peak_i!(4) == ' '
-                {
+                if next == 'k' && peak!(2) == 'o' && peak!(3) == 't' && peak!(4) == ' ' {
                     config.push(contents[(index + 5)..i].iter().collect())
                 }
                 index = i;
             }
-            '(' => token_i!(LParen),
-            ')' => token_i!(RParen),
-            '{' => token_i!(LCurly),
-            '}' => token_i!(RCurly),
-            ',' => token_i!(Comma),
-            ':' => token_i!(Colon),
-            '$' => token_i!(DollarSign),
-            '=' => token_peak!('=', Equal, Assign),   // =, ==
-            '!' => token_peak!('=', NotEqual, Not),   // !, !=
-            '<' => token_peak!('=', LessEqual, Less), // <, <=
-            '>' => token_peak!('=', GreaterEqual, Greater), // >, >=
-            '&' => {
+            ('(', _) => token_i!(LParen),
+            (')', _) => token_i!(RParen),
+            ('{', _) => token_i!(LCurly),
+            ('}', _) => token_i!(RCurly),
+            (',', _) => token_i!(Comma),
+            (':', _) => token_i!(Colon),
+            ('$', _) => token_i!(DollarSign),
+            ('=', next) => token_peak!(next, '=', Equal | Assign), // =, ==
+            ('!', next) => token_peak!(next, '=', NotEqual | Not), // !, !=
+            ('<', next) => token_peak!(next, '=', LessEqual | Less), // <, <=
+            ('>', next) => token_peak!(next, '=', GreaterEqual | Greater), // >, >=
+            ('&', next) => {
                 // &&
-                if peak!() == '&' {
+                if next == '&' {
                     token_i!(And);
                     index += 1;
                     col += 1;
                 }
                 else {
-                    panic!("Unexpected token at {line}:{col}");
+                    panic!("& is not a valid token, use && instead. {line}:{col}");
                 }
             }
-            '|' => {
+            ('|', next) => {
                 // ||
-                if peak!() == '|' {
+                if next == '|' {
                     token_i!(Or);
                     index += 1;
                     col += 1;
                 }
                 else {
-                    panic!("Unexpected token at {line}:{col}");
+                    panic!("| is not a valid token, use || instead. {line}:{col}");
                 }
             }
-            '`' => {
+            ('`', _) => {
                 // Command
                 todo!();
             }
-            '"' => {
+            ('"', next) => {
                 // String
-                // TODO: r becomes ident!!! (backtrack through #'s to find r)
-                todo!();
+                // TODO: Remove regex!!!
+                if next == '"' {
+                    token!(String, "".to_string());
+                    index += 2;
+                    col += 2;
+                }
+                else {
+                    let word: String = contents[index..contents.len()].iter().collect();
+                    let (c1, c2, _) = match regex_captures!(r#""(([^\\"\n]|\\.)*)""#, word.as_str())
+                    {
+                        None => panic!("String at {line}:{col} could not be captured."),
+                        Some(c) => c,
+                    };
+
+                    token!(String, c2.to_string());
+                    index += c1.len();
+                    col += c1.len();
+                }
             }
-            '.' => {
+            ('r', '#' | '"') => {
+                // Raw String
+                let mut t_line = line;
+                let mut t_col = col;
+
+                let mut p = peak!(1);
+                let mut hashes = 0_usize;
+                loop {
+                    match p {
+                        '#' => hashes += 1,
+                        '\0' => panic!("Raw String at {line}:{col} is malformed. EOF before a starting \" was detected."),
+                        _ => break,
+                    }
+                    p = peak!(hashes + 1);
+                }
+                let hashes = hashes;
+
+                if p != '"' {
+                    panic!("Raw String at {line}:{col} is malformed. Missing a starting \".")
+                }
+                t_col += hashes + 1;
+
+                let mut str_index = hashes + 1;
+                let mut found_quote = false;
+                let mut hashes_end = 0_usize;
+                loop {
+                    str_index += 1;
+                    t_col += 1;
+                    p = peak!(str_index);
+
+                    match p {
+                        '"' => {
+                            if hashes == 0 {
+                                break;
+                            }
+
+                            found_quote = true;
+                            hashes_end = 0;
+                        },
+                        '#' => {
+                            if found_quote {
+                                hashes_end += 1;
+                                if hashes_end == hashes {
+                                    match peak!(str_index + 1) {
+                                        '#' => {
+                                            found_quote = false;
+                                            hashes_end = 0;
+                                        }
+                                        _ => break
+                                    }
+                                }
+                            }
+                        }
+                        '\n' => {
+                            found_quote = false;
+                            t_line += 1;
+                            t_col = 0;
+                        }
+                        '\0' => panic!("Raw String at {line}:{col} is malformed. EOF before an ending \" was detected. It is also possible that you have uneven #'s."),
+                        _ => found_quote = false,
+                    }
+                }
+
+                let word: String = contents[(index + hashes + 2)..(index + str_index - hashes)]
+                    .iter()
+                    .collect();
+                token!(RawString, word);
+                index += str_index + 1;
+                line = t_line;
+                col = t_col + 1;
+            }
+            ('.', next) => {
                 // Dot (. .. ..=)
-                match (peak!(), peak_i!(2)) {
+                match (next, peak!(2)) {
                     ('.', '=') => {
                         token!(RangeInclusive);
                         index += 3;
@@ -173,7 +262,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                     }
                 }
             }
-            'a'..='z' | 'A'..='Z' | '_' | '-' | '0'..='9' => {
+            ('a'..='z' | 'A'..='Z' | '_' | '-' | '0'..='9', next) => {
                 let word_index = get_word(&contents, index);
                 let word: String = contents[index..word_index].iter().collect();
 
@@ -198,7 +287,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
 
                 match *c {
                     '-' => {
-                        if peak!().is_ascii_digit() {
+                        if next.is_ascii_digit() {
                             insert_word!();
                         }
                         else {
@@ -212,18 +301,18 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                 col += word_index - index;
                 index = word_index;
             }
-            ' ' | '\t' | '\r' => {
+            (' ' | '\t' | '\r', _) => {
                 // Whitespace (No newline)
                 index += 1;
                 col += 1;
             }
-            '\n' => {
+            ('\n', _) => {
                 // Newline
                 index += 1;
                 line += 1;
                 col = 1;
             }
-            _ => panic!("Unexpected token at {line}:{col}"),
+            _ => panic!("Unexpected token at {line}:{col}. ({c})"),
         }
     }
 
