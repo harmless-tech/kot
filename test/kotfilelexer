@@ -6,8 +6,8 @@
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel.
-# Tells kot to do {{}} substitution in strings.
-#kot cacheable=true,threads=4,pure_raw_strings=false
+# Tells kot to not do {{}} substitution in raw strings.
+#kot cacheable=true,threads=4,pure_raw_strings=true
 
 .triplet aarch64-apple-darwin { }
 .os macos linux { let kot.shell =  }
@@ -30,12 +30,12 @@ let sr = r#"""
 
 """#
 
-let cmd =
+let cmd = `echo 20`
 cmd
 
-.regex regex (gmxUsi) {  }
-let m1 = regex.match().0
-let m1 = regex.match().result
+.regex regex (gmxUsi) { "h{0}" }
+let m1 = regex.match("hello").0
+let m1 = regex.match("hello").result
 
 let all_args = .args { # Cannot do --kot
     -i: arg,  # Since - args can be combined together if these two are combined then
@@ -56,9 +56,14 @@ let all_args = .args { # Cannot do --kot
     .return { a, b, c }
 }
 
-const jump =  # Cannot be rebound
+const jump = "jump" # Cannot be rebound
+
+`echo 'Hello, \
+       World!'`
 
 .cmd {
+    `echo 'hello!'`
+    `echo "Workdir: {{ kot.pwd }}"`
 }
 
 .cmd run (args: all_args) {
@@ -90,5 +95,3 @@ let abc
 # Logic?
 # Only logical and compare ops for now. (==, !=, <, >, <=, >=, &&, ||, !)
 # let logic = 1 + 2 - 3 * 100 / 10 % 40 && 1
-
-"\"\"   \"\""

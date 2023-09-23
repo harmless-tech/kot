@@ -141,9 +141,50 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                     panic!("| is not a valid token, use || instead. {line}:{col}");
                 }
             }
-            ('`', _) => {
+            ('`', next) => {
                 // Command
-                todo!();
+                if next == '`' {
+                    token!(Command, "".to_string());
+                    index += 2;
+                    col += 2;
+                }
+                else {
+                    let mut t_line = line;
+                    let mut t_col = col;
+
+                    let mut cmd_index = 0_usize;
+                    let mut backslash = false;
+                    loop {
+                        cmd_index += 1;
+                        t_col += 1;
+
+                        match peak!(cmd_index) {
+                            '`' => break,
+                            '\\' => {
+                                backslash = true;
+                            }
+                            '\n' => {
+                                t_line += 1;
+                                t_col = 0;
+
+                                if backslash {
+                                    backslash = false;
+                                }
+                                else {
+                                    panic!("Command at {line}:{col} is malformed. Newline before an ending ` was detected. Try adding a \\ before the newline.")
+                                }
+                            },
+                            '\0' => panic!("Command at {line}:{col} is malformed. EOF before an ending ` was detected."),
+                            _ => backslash = false,
+                        }
+                    }
+
+                    let word: String = contents[(index + 1)..(index + cmd_index)].iter().collect();
+                    token!(Command, word);
+                    index += cmd_index + 1;
+                    line = t_line;
+                    col = t_col + 1;
+                }
             }
             ('"', next) => {
                 // String
@@ -165,11 +206,11 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                                 backslash = false;
                             }
                             '\\' => {
-                                backslash = true;
+                                backslash = !backslash;
                             }
                             '\n' => panic!("String at {line}:{col} is malformed. Newline before an ending \" was detected."),
                             '\0' => panic!("String at {line}:{col} is malformed. EOF before an ending \" was detected."),
-                            _ => {}
+                            _ => backslash = false,
                         }
                     }
 
