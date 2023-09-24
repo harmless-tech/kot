@@ -51,7 +51,7 @@ let all_args = .args { # Cannot do --kot
 
 const jump = "jump" # Cannot be rebound
 
-`echo 'Hello, \ # Hello, World!
+`echo 'Hello, \
        World!'`
 
 .cmd {

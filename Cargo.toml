@@ -18,17 +18,33 @@ include = [
     "README.md"
 ]
 
+[[bin]]
+name = "kot"
+path = "src/bin/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
 [dependencies]
 #anyhow = "1.0.75"
 num_cpus = "1.16.0"
 rustc-hash = "1.1.0"
 
 [features]
-default = ["i64", "threads"]
+default = ["i64"]
 # Use i64 as int type.
 i64 = []
-# Allow args and other things to be processed on a separate thread. (Max: 2)
+# Allow args and other things to be processed on a separate thread. (Max: 4)
+# TODO: This seems to be slow so maybe we should just get rid of it. Or use an async runtime.
 threads = []
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "kot_tmp"
+harness = false
+required-features = ["threads"]
 
 [profile.release]
 opt-level = 3
