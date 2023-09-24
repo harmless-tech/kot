@@ -13,8 +13,8 @@ fn main() {
     #[cfg(feature = "threads")]
     println!("WARN: Threads feature is not implemented and may be removed in the future.");
 
-    let (entry_args, env_config) = args::collect_args();
+    let (_entry_args, _env_config) = args::collect_args();
 
     let raw_kotfile = std::fs::read_to_string("./test/kotfile2").unwrap();
-    let (tokens, f_args) = lexer::lex(&raw_kotfile);
+    let (_tokens, _f_args) = lexer::lex(&raw_kotfile);
 }

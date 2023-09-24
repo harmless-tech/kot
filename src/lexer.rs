@@ -1,7 +1,26 @@
-/// (Token, (Line, Col)))
-pub type ExToken = (Token, (usize, usize));
-/// (Config, (Line, Col)))
-pub type ExConfig = (String, (usize, usize));
+#[derive(Debug)]
+pub struct ExToken {
+    pub token: Token,
+    pub line: usize,
+    pub col: usize,
+}
+impl ExToken {
+    fn new(token: Token, line: usize, col: usize) -> Self {
+        Self { token, line, col }
+    }
+}
+
+#[derive(Debug)]
+pub struct ExConfig {
+    config: String,
+    line: usize,
+    col: usize,
+}
+impl ExConfig {
+    fn new(config: String, line: usize, col: usize) -> Self {
+        Self { config, line, col }
+    }
+}
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Token {
@@ -58,12 +77,12 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
     macro_rules! token {
         ($x:ident) => {
             {
-                tokens.push((Token::$x, (line, col)));
+                tokens.push(ExToken::new(Token::$x, line, col));
             }
         };
         ($x:ident, $($v:expr), *) => {
             {
-                tokens.push((Token::$x($($v,)*), (line, col)));
+                tokens.push(ExToken::new(Token::$x($($v,)*), line, col));
             }
         };
     }
@@ -107,7 +126,11 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 // Comment
                 let i = skip_comment(&contents, index);
                 if next == 'k' && peak!(2) == 'o' && peak!(3) == 't' && peak!(4) == ' ' {
-                    config.push((contents[(index + 5)..i].iter().collect(), (line, col)))
+                    config.push(ExConfig::new(
+                        contents[(index + 5)..i].iter().collect(),
+                        line,
+                        col,
+                    ));
                 }
                 index = i;
             }
@@ -409,11 +432,11 @@ mod test {
             let l = lex($l1);
 
             for (l, t) in l.0.iter().zip(t) {
-                assert!(l.0.eq(&t));
+                assert!(l.token.eq(&t));
             }
 
             for (l, c) in l.1.iter().zip(c) {
-                assert!(l.0.eq(&c.to_string()));
+                assert!(l.config.eq(&c.to_string()));
             }
         }};
     }
