@@ -130,7 +130,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                     col += 1;
                 }
                 else {
-                    panic!("& is not a valid token, use && instead. {line}:{col}");
+                    panic!("Lexer: & is not a valid token, use && instead. {line}:{col}");
                 }
             }
             ('|', next) => {
@@ -141,7 +141,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                     col += 1;
                 }
                 else {
-                    panic!("| is not a valid token, use || instead. {line}:{col}");
+                    panic!("Lexer: | is not a valid token, use || instead. {line}:{col}");
                 }
             }
             ('`', next) => {
@@ -175,10 +175,10 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                                     backslash = false;
                                 }
                                 else {
-                                    panic!("Command at {line}:{col} is malformed. Newline before an ending ` was detected. Try adding a \\ before the newline.")
+                                    panic!("Lexer: Command at {line}:{col} is malformed. Newline before an ending ` was detected. Try adding a \\ before the newline.")
                                 }
                             },
-                            '\0' => panic!("Command at {line}:{col} is malformed. EOF before an ending ` was detected."),
+                            '\0' => panic!("Lexer: Command at {line}:{col} is malformed. EOF before an ending ` was detected."),
                             _ => backslash = false,
                         }
                     }
@@ -212,8 +212,8 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                             '\\' => {
                                 backslash = !backslash;
                             }
-                            '\n' => panic!("String at {line}:{col} is malformed. Newline before an ending \" was detected."),
-                            '\0' => panic!("String at {line}:{col} is malformed. EOF before an ending \" was detected."),
+                            '\n' => panic!("Lexer: String at {line}:{col} is malformed. Newline before an ending \" was detected."),
+                            '\0' => panic!("Lexer: String at {line}:{col} is malformed. EOF before an ending \" was detected."),
                             _ => backslash = false,
                         }
                     }
@@ -234,7 +234,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 loop {
                     match p {
                         '#' => hashes += 1,
-                        '\0' => panic!("Raw String at {line}:{col} is malformed. EOF before a starting \" was detected."),
+                        '\0' => panic!("Lexer: Raw String at {line}:{col} is malformed. EOF before a starting \" was detected."),
                         _ => break,
                     }
                     p = peak!(hashes + 1);
@@ -242,7 +242,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 let hashes = hashes;
 
                 if p != '"' {
-                    panic!("Raw String at {line}:{col} is malformed. Missing a starting \".")
+                    panic!("Lexer: Raw String at {line}:{col} is malformed. Missing a starting \".")
                 }
                 t_col += hashes + 1;
 
@@ -282,7 +282,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                             t_line += 1;
                             t_col = 0;
                         }
-                        '\0' => panic!("Raw String at {line}:{col} is malformed. EOF before an ending \" was detected. It is also possible that you have uneven #'s."),
+                        '\0' => panic!("Lexer: Raw String at {line}:{col} is malformed. EOF before an ending \" was detected. It is also possible that you have uneven #'s."),
                         _ => found_quote = false,
                     }
                 }
@@ -369,7 +369,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 line += 1;
                 col = 1;
             }
-            _ => panic!("Unexpected token at {line}:{col}. ({c})"),
+            _ => panic!("Lexer: Unexpected token at {line}:{col}. ({c})"),
         }
     }
 

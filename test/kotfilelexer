@@ -8,11 +8,11 @@
 # Tells kot the max amount of cmds to run in parallel. (Kot itself will always use a max of two threads unless build with --no-default-features)
 # Tells kot to not do {{}} substitution in raw strings.
 # Tells kot to only run this file if it supports i64 as its int type.
-#kot cacheable=true,children=4,pure_raw_strings=true,require_i64=true
+#kot cache=true,children=4,pure_raw_strings=true,require_i64=true
 
 .triplet aarch64-apple-darwin { }
-.os macos linux { let kot.shell =  }
-.family windows { let kot.shell =  }
+.os macos linux { let kot.shell = ""  }
+.family windows { let kot.shell = "" }
 .arch x86_64 { kot.env.AMD64 = true }
 
 # kot.platform.triplet (rust triplets)
@@ -43,7 +43,7 @@ let m1 = regex.match("hello").0
 let m1 = regex.match("hello").result
 
 let all_args = .args { # Cannot do --kot
-    -i: arg,  # Since - args can be combined together if these two are combined then
+    -i: arg(double: --interstate),  # Since - args can be combined together if these two are combined then
     -v: arg,  # it will take like this -> -iv [I] [V], -vi [V] [I], -iv=[I] [V], -vi=[V] [I]
     -r: flag, # -irv [I] [V]
     -m: flag,

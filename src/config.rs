@@ -1,9 +1,7 @@
-use std::{env::Args, process::CommandArgs};
-
 #[derive(Debug)]
 pub struct Config {
     pub version: bool,
-    pub cacheable: bool,
+    pub cache: bool,
     pub children: usize,
     pub pure_raw_strings: bool,
     pub require_i64: bool,
@@ -42,7 +40,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             version: false,
-            cacheable: false,
+            cache: false,
             children: num_cpus::get(),
             pure_raw_strings: false,
             require_i64: false,

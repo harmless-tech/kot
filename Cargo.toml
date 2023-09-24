@@ -19,7 +19,7 @@ include = [
 ]
 
 [dependencies]
-anyhow = "1.0.75"
+#anyhow = "1.0.75"
 num_cpus = "1.16.0"
 rustc-hash = "1.1.0"
 
