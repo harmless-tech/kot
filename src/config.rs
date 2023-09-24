@@ -1,6 +1,7 @@
 #[derive(Debug)]
 pub struct Config {
     pub version: bool,
+    pub list: bool,
     pub cache: bool,
     pub children: usize,
     pub pure_raw_strings: bool,
@@ -40,6 +41,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             version: false,
+            list: false,
             cache: false,
             children: num_cpus::get(),
             pure_raw_strings: false,

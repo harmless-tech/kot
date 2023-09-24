@@ -40,7 +40,7 @@ let all_args = .args { # Cannot do --kot
     ps0: pos(0),
     ps1: pos(1),
     ps2: pos(2, required: true, type: int, con: $ < 0), # Since this is required, then others are also required
-    --: last(required: true)
+    l: last(required: true)
 }
 
 # Functions can return an object
