@@ -20,6 +20,8 @@
 # kot.platform.family
 # kot.platform.arch
 
+let plus = "pl" + "us"
+
 let aaa = ""
 let abbb = "str\""
 let one = "oneee"

@@ -61,6 +61,8 @@ pub enum Token {
 
     RangeInclusive,
     RangeExclusive,
+
+    Plus,
 }
 
 /// (Vec of Tokens, Vec of configs)
@@ -141,6 +143,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
             (',', _) => token_i!(Comma),
             (':', _) => token_i!(Colon),
             ('$', _) => token_i!(DollarSign),
+            ('+', _) => token_i!(Plus),
             ('=', next) => token_peak!(next, '=', Equal | Assign), // =, ==
             ('!', next) => token_peak!(next, '=', NotEqual | Not), // !, !=
             ('<', next) => token_peak!(next, '=', LessEqual | Less), // <, <=
