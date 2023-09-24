@@ -9,37 +9,12 @@ fn main() {
     println!("Hello, world!"); // TODO: Remove!
                                // TODO: Panic hook to kill entire program?
 
-    let entry_args = {
-        #[cfg(feature = "threads")]
-        {
-            std::thread::spawn(args::collect_args)
-        }
-        #[cfg(not(feature = "threads"))]
-        args::collect_args()
-    };
-
-    let lexed = {
-        #[cfg(feature = "threads")]
-        {
-            std::thread::spawn(|| {
-                // TODO: Temp
-                let raw_kotfile = std::fs::read_to_string("./test/kotfile2").unwrap();
-                lexer::lex(&raw_kotfile)
-            })
-        }
-        #[cfg(not(feature = "threads"))]
-        {
-            // TODO: Temp
-            let raw_kotfile = std::fs::read_to_string("./test/kotfile2").unwrap();
-            lexer::lex(&raw_kotfile)
-        }
-    };
-
+    // TODO: Implement threads? Is it worth?
     #[cfg(feature = "threads")]
-    let entry_args = entry_args.join().unwrap();
-    #[cfg(debug_assertions)]
-    dbg!(&entry_args);
+    println!("WARN: Threads feature is not implemented and may be removed in the future.");
 
-    #[cfg(feature = "threads")]
-    let lexed = lexed.join().unwrap();
+    let (entry_args, env_config) = args::collect_args();
+
+    let raw_kotfile = std::fs::read_to_string("./test/kotfile2").unwrap();
+    let (tokens, f_args) = lexer::lex(&raw_kotfile);
 }

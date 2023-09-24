@@ -44,7 +44,7 @@ criterion = "0.5.1"
 [[bench]]
 name = "kot_tmp"
 harness = false
-required-features = ["threads"]
+required-features = []
 
 [profile.release]
 opt-level = 3

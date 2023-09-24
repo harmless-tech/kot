@@ -3,7 +3,7 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use kot::{args, lexer};
 
-criterion_group!(benches, process_single, process_multi);
+criterion_group!(benches, process_single);
 criterion_main!(benches);
 
 fn process_single(c: &mut Criterion) {

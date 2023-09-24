@@ -1,3 +1,5 @@
+use std::env::VarError;
+
 #[derive(Debug)]
 pub struct EntryArgs {
     pub kot: Vec<String>,
@@ -27,10 +29,10 @@ impl EntryArgsImm {
     }
 }
 
-pub fn collect_args() -> EntryArgs {
+pub fn collect_args() -> (EntryArgs, String) {
     let args = std::env::args().collect();
     let imm = parse_args(args);
-    flatten_args(imm)
+    (flatten_args(imm), collect_env())
 }
 
 fn parse_args(args: Vec<String>) -> EntryArgsImm {
@@ -133,6 +135,14 @@ fn split_eq(s: &mut String) -> Option<String> {
         return Some(s);
     }
     None
+}
+
+fn collect_env() -> String {
+    match std::env::var("KOT") {
+        Ok(e) => e,
+        Err(VarError::NotPresent) => String::new(),
+        Err(VarError::NotUnicode(_)) => panic!("Env: 'KOT' env var is not valid unicode."),
+    }
 }
 
 // TODO: Test!!!
