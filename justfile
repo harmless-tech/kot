@@ -42,7 +42,11 @@ hack:
     --mount type=bind,source=$HOME/.cargo/registry,target=/usr/local/cargo/registry \
     -w /project \
     rust:latest \
-    bash -c 'cargo run -- cargo-hack && cargo hack check --each-feature --no-dev-deps --verbose --workspace --locked && cargo hack check --feature-powerset --no-dev-deps --verbose --workspace --locked'
+    bash -c "curl --proto '=https' --tlsv1.2 -sSf \
+    https://raw.githubusercontent.com/cargo-prebuilt/cargo-prebuilt/main/scripts/install-cargo-prebuilt.sh | bash \
+    && cargo prebuilt cargo-hack --ci \
+    && cargo hack check --each-feature --no-dev-deps --verbose --workspace \
+    && cargo hack check --feature-powerset --no-dev-deps --verbose --workspace"
 
 msrv:
     docker run -t --rm --pull=always \

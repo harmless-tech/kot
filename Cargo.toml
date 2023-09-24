@@ -35,7 +35,7 @@ default = ["i64"]
 # Use i64 as int type.
 i64 = []
 # Allow args and other things to be processed on a separate thread. (Max: 4)
-# TODO: This seems to be slow so maybe we should just get rid of it. Or use an async runtime.
+# TODO: This seems to be slow so maybe get rid of it. Or use an async runtime.
 threads = []
 
 [dev-dependencies]

@@ -134,12 +134,12 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          cargo hack check --each-feature --no-dev-deps --verbose --workspace --locked 2>&1 | tee .step-data.txt
+          cargo hack check --each-feature --no-dev-deps --verbose --workspace 2>&1 | tee .step-data.txt
       - name: Hack Check (feature-powerset)
         shell: bash
         run: |
           set -o pipefail
-          cargo hack check --feature-powerset ${{ env.hack-group }} --no-dev-deps --verbose --workspace --locked 2>&1 | tee .step-data.txt
+          cargo hack check --feature-powerset ${{ env.hack-group }} --no-dev-deps --verbose --workspace 2>&1 | tee .step-data.txt
       - name: Put into summary (success)
         if: success()
         shell: bash

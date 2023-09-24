@@ -36,9 +36,6 @@ pub fn collect_args() -> (EntryArgs, String) {
 }
 
 fn parse_args(args: Vec<String>) -> EntryArgsImm {
-    #[cfg(debug_assertions)]
-    dbg!(&args);
-
     let mut args = args.into_iter();
     let _ = args.next(); // Remove the exe arg.
 
