@@ -43,9 +43,10 @@ guard if let ll = kot.dev.none {
 let m1 = regex.match("hello").0
 let m1 = regex.match("hello").result
 
+# TODO: Args with - and -- are not valid anymore.
 let all_args = .args { # Cannot do --kot
-    -i: arg(double: --interstate),  # Since - args can be combined together if these two are combined then
-    -v: arg,  # it will take like this -> -iv [I] [V], -vi [V] [I], -iv=[I] [V], -vi=[V] [I]
+    i: arg(s: -i, d: --interstate),  # Since - args can be combined together if these two are combined then
+    v: arg(s: v),  # it will take like this -> -iv [I] [V], -vi [V] [I], -iv=[I] [V], -vi=[V] [I]
     -r: flag, # -irv [I] [V]
     -m: flag,
     --release: flag, # -- args cannot be combined.

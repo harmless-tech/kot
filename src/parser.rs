@@ -1,7 +1,7 @@
 #![allow(unused_variables)] // TODO: Remove!
 
 use crate::{
-    ast::{Ast, Types},
+    ast::{Ast, Ast::Exit, Types},
     config::Config,
     lexer::{ExToken, Token},
     Pos,
@@ -11,6 +11,7 @@ use std::{iter::Peekable, vec::IntoIter};
 // TODO: Improve error messages.
 
 // TODO: Get rid of this and pass by args?
+// TODO: Remove config since right now you can only configure the vm and outside stuff.
 struct ParseData<'a> {
     tokens: Peekable<IntoIter<ExToken>>,
     config: &'a Config,
@@ -94,45 +95,48 @@ fn p(data: &mut ParseData) -> Vec<Ast> {
 
 fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> Ast {
     match id.as_str() {
-        "args" => {
-            todo!()
-        }
-        "regex" => {
-            todo!()
-        }
-        "cmd" => {
-            todo!()
-        }
-        "return" => {
-            todo!()
-        }
-        "spawn" => {
-            todo!()
-        }
-        "parallel" => {
-            todo!()
-        }
-        "triplet" => {
-            todo!()
-        }
-        "arch" => {
-            todo!()
-        }
-        "os" => {
-            todo!()
-        }
-        "family" => {
-            todo!()
-        }
-        "panic" => {
-            todo!()
-        }
-        "exit" => {
-            todo!()
-        }
+        "args" => todo!(),
+        "regex" => todo!(),
+        "cmd" => todo!(),
+        "return" => todo!(),
+        "spawn" => todo!(),
+        "parallel" => todo!(),
+        "triplet" => todo!(),
+        "arch" => todo!(),
+        "os" => todo!(),
+        "family" => todo!(),
+        "panic" => todo!(), // How to handle string vs raw string
+        "exit" => p_dot_exit(pos, data.next()),
         _ => panic!(
             "Parser: Invalid dot (.) type {} at ({}:{}).",
             id, pos.0, pos.1
+        ),
+    }
+}
+
+fn p_dot_exit(pos: Pos, token: ExToken) -> Ast {
+    match token {
+        ExToken {
+            token: Token::Ident(id),
+            ..
+        } => Exit(Types::Ident(id)),
+        ExToken {
+            token: Token::Int(i),
+            line,
+            col,
+        } => {
+            let i: i32 = match i.parse() {
+                Ok(i) => i,
+                Err(_) => panic!(
+                    "Parser: Could not parse i32 after .exit. ({}:{})",
+                    pos.0, pos.1
+                ),
+            };
+            Exit(Types::Integer(i.into()))
+        }
+        token => panic!(
+            "Parser: Must have i32 or identifier after .exit. ({}:{})",
+            pos.0, pos.1
         ),
     }
 }

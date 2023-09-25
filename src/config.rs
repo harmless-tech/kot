@@ -4,7 +4,6 @@ pub struct Config {
     pub list: bool,
     pub cache: bool,
     pub children: usize,
-    pub pure_raw_strings: bool,
     pub require_i64: bool,
 }
 impl Config {
@@ -44,7 +43,6 @@ impl Default for Config {
             list: false,
             cache: false,
             children: num_cpus::get(),
-            pure_raw_strings: false,
             require_i64: false,
         }
     }

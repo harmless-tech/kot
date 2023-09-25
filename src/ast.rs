@@ -7,8 +7,10 @@ pub type Ident = String;
 pub type RAst = Box<Ast>;
 
 pub enum Ast {
-    /// Command or Ident
+    /// Ident or Command
     RunCommand(Types),
+    /// Ident or Integer
+    Exit(Types),
 
     Id(Ident),
     DotEx(DotExTypes), // TODO

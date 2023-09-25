@@ -372,7 +372,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                     }
                 }
             }
-            ('a'..='z' | 'A'..='Z' | '_' | '-' | '0'..='9', next) => {
+            ('a'..='z' | 'A'..='Z' | '_' | '-' | '0'..='9', _) => {
                 let word_index = get_word(&contents, index);
                 let word: String = contents[index..word_index].iter().collect();
 
@@ -398,15 +398,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 }
 
                 match *c {
-                    '-' => {
-                        if next.is_ascii_digit() {
-                            insert_word!();
-                        }
-                        else {
-                            insert_int!();
-                        }
-                    }
-                    '0'..='9' => insert_int!(),
+                    '-' | '0'..='9' => insert_int!(),
                     _ => insert_word!(),
                 }
 
@@ -442,8 +434,8 @@ fn skip_comment(contents: &[char], mut index: usize) -> usize {
 fn get_word(contents: &[char], mut index: usize) -> usize {
     while index < contents.len()
         && (contents[index].is_alphanumeric()
-            || contents[index] == '_'
             || contents[index] == '-'
+            || contents[index] == '_'
             || contents[index] == '.')
     {
         index += 1;
