@@ -1,3 +1,6 @@
+use crate::Pos;
+use std::fmt::{write, Display, Formatter};
+
 #[derive(Debug)]
 pub struct ExToken {
     pub token: Token,
@@ -7,6 +10,28 @@ pub struct ExToken {
 impl ExToken {
     fn new(token: Token, line: usize, col: usize) -> Self {
         Self { token, line, col }
+    }
+
+    pub fn eof() -> Self {
+        Self {
+            token: Token::Eof,
+            line: 0,
+            col: 0,
+        }
+    }
+
+    pub fn pos(&self) -> Pos {
+        (self.line, self.col)
+    }
+}
+
+//TODO: Not needed?
+impl Display for ExToken {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write(
+            f,
+            format_args!("{:?} at ({}:{})", self.token, self.line, self.col),
+        )
     }
 }
 
@@ -51,6 +76,7 @@ pub enum Token {
     And,
     Or,
 
+    Function,
     Let,
     Const,
     Guard,
@@ -64,6 +90,8 @@ pub enum Token {
 
     Plus,
 }
+
+// TODO: Use struct instead of macros to allow big functions to become smaller ones.
 
 /// (Vec of Tokens, Vec of configs)
 pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
@@ -95,7 +123,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
             col += 1;
         }};
     }
-    macro_rules! peak_ref {
+    macro_rules! peek_ref {
         ($e:expr) => {
             match contents.get(index + $e) {
                 Some(c) => c,
@@ -103,12 +131,12 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
             }
         };
     }
-    macro_rules! peak {
+    macro_rules! peek {
         ($e:expr) => {
-            *peak_ref!($e)
+            *peek_ref!($e)
         };
     }
-    macro_rules! token_peak {
+    macro_rules! token_peek {
         ($next:ident, $e:expr, $x1:ident | $x2:ident) => {
             if $next == $e {
                 token!($x1);
@@ -123,11 +151,11 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
 
     while index < content.len() {
         let c = &contents[index];
-        match (*c, peak!(1)) {
+        match (*c, peek!(1)) {
             ('#', next) => {
                 // Comment
                 let i = skip_comment(&contents, index);
-                if next == 'k' && peak!(2) == 'o' && peak!(3) == 't' && peak!(4) == ' ' {
+                if next == 'k' && peek!(2) == 'o' && peek!(3) == 't' && peek!(4) == ' ' {
                     config.push(ExConfig::new(
                         contents[(index + 5)..i].iter().collect(),
                         line,
@@ -144,10 +172,10 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
             (':', _) => token_i!(Colon),
             ('$', _) => token_i!(DollarSign),
             ('+', _) => token_i!(Plus),
-            ('=', next) => token_peak!(next, '=', Equal | Assign), // =, ==
-            ('!', next) => token_peak!(next, '=', NotEqual | Not), // !, !=
-            ('<', next) => token_peak!(next, '=', LessEqual | Less), // <, <=
-            ('>', next) => token_peak!(next, '=', GreaterEqual | Greater), // >, >=
+            ('=', next) => token_peek!(next, '=', Equal | Assign), // =, ==
+            ('!', next) => token_peek!(next, '=', NotEqual | Not), // !, !=
+            ('<', next) => token_peek!(next, '=', LessEqual | Less), // <, <=
+            ('>', next) => token_peek!(next, '=', GreaterEqual | Greater), // >, >=
             ('&', next) => {
                 // &&
                 if next == '&' {
@@ -187,7 +215,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                         cmd_index += 1;
                         t_col += 1;
 
-                        match peak!(cmd_index) {
+                        match peek!(cmd_index) {
                             '`' => break,
                             '\\' => {
                                 backslash = true;
@@ -228,7 +256,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                     let mut backslash = false;
                     loop {
                         str_index += 1;
-                        match peak!(str_index) {
+                        match peek!(str_index) {
                             '"' => {
                                 if !backslash {
                                     break;
@@ -255,7 +283,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 let mut t_line = line;
                 let mut t_col = col;
 
-                let mut p = peak!(1);
+                let mut p = peek!(1);
                 let mut hashes = 0_usize;
                 loop {
                     match p {
@@ -263,7 +291,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                         '\0' => panic!("Lexer: Raw String at {line}:{col} is malformed. EOF before a starting \" was detected."),
                         _ => break,
                     }
-                    p = peak!(hashes + 1);
+                    p = peek!(hashes + 1);
                 }
                 let hashes = hashes;
 
@@ -278,7 +306,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 loop {
                     str_index += 1;
                     t_col += 1;
-                    p = peak!(str_index);
+                    p = peek!(str_index);
 
                     match p {
                         '"' => {
@@ -293,7 +321,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                             if found_quote {
                                 hashes_end += 1;
                                 if hashes_end == hashes {
-                                    match peak!(str_index + 1) {
+                                    match peek!(str_index + 1) {
                                         '#' => {
                                             found_quote = false;
                                             hashes_end = 0;
@@ -323,7 +351,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
             }
             ('.', next) => {
                 // Dot (. .. ..=)
-                match (next, peak!(2)) {
+                match (next, peek!(2)) {
                     ('.', '=') => {
                         token!(RangeInclusive);
                         index += 3;
@@ -351,6 +379,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 macro_rules! insert_word {
                     () => {
                         match word.as_str() {
+                            "fn" => token!(Function),
                             "let" => token!(Let),
                             "const" => token!(Const),
                             "guard" => token!(Guard),

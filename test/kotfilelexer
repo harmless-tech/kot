@@ -6,9 +6,8 @@
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel. (Kot itself will always use a max of two threads unless build with --no-default-features)
-# Tells kot to not do {{}} substitution in raw strings.
 # Tells kot to only run this file if it supports i64 as its int type.
-#kot cache=true,children=4,pure_raw_strings=true,require_i64=true
+#kot cache=true,children=4,require_i64=true
 
 .triplet aarch64-apple-darwin { }
 .os macos linux { let kot.shell = ""  }
@@ -58,15 +57,21 @@ let all_args = .args { # Cannot do --kot
 }
 
 # Functions can return an object
-.fn runner (a, b, c) {
+fn runner (a, b, c) {
     cmd
     .return { a, b, c }
 }
 
-const jump = "jump" # Cannot be rebound
+const jump = "echo" # Cannot be rebound
+`{{ jump }}` # Run a string has a command.
 
+# If this fails it exits it will kill kot.
 `echo 'Hello, \
        World!'`
+
+# This will not kill the program if it fails to exit.
+let b = `echo Hello World!`
+b.success # If not true, then kot will stop here.
 
 .cmd {
     `echo 'hello!'`
@@ -93,11 +98,17 @@ const jump = "jump" # Cannot be rebound
         let a = if let b = kot.env.CARGO_HOME { b }
         if a {  }
     }
+
+    # Exit with code 10.
+    .exit 10
 }
 
 let abc=23
 
 let abc
+
+# Spawn will spawn all commands within, but it will not return anything.
+.spawn { `echo 'sep'` }
 
 # Logic?
 # Only logical and compare ops for now. (==, !=, <, >, <=, >=, &&, ||, !)

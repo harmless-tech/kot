@@ -3,9 +3,13 @@ use rustc_hash::FxHashMap;
 
 // TODO: Expand and fix this while doing the parser.
 
-type Ident = String;
+pub type Ident = String;
+pub type RAst = Box<Ast>;
 
 pub enum Ast {
+    /// Command or Ident
+    RunCommand(Types),
+
     Id(Ident),
     DotEx(DotExTypes), // TODO
     If(Box<Ast>, Box<Ast>, Option<Box<Ast>>),
@@ -14,9 +18,11 @@ pub enum Ast {
 }
 
 pub enum Types {
+    Ident(String),
     String(String),
     Command(String),
     Integer(Int),
+    Boolean(bool),
     Regex(), // TODO
     Object(FxHashMap<String, Types>),
 }

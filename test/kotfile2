@@ -1,12 +1,12 @@
 # Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
-# Version: --kot version=true
+# Version: --kot version == --kot version=true
 
 # {{}} substitution can only contain variable names!
 
 # Config
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel.
-#kot cache=true,children=4
+#kot version,cache=true,children=4
 
 .os macos linux { let kot.shell = "/bin/zsh -c" } # Will be split by spaces.
 .family windows { let kot.shell = "pwsh -NoLogo -Command" }
