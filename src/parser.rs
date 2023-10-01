@@ -71,14 +71,34 @@ fn p(data: &mut ParseData) -> Vec<Ast> {
                 _ => ast.push(Ast::RunCommand(Types::Ident(id))),
             },
             Token::Dot(id) => ast.push(p_dot(id, pos, data)),
-            Token::Command(_) => {}
-            Token::Function => {}
-            Token::Let => {}
-            Token::Const => {}
-            Token::Guard => {}
-            Token::If => {}
-            Token::True => {}
-            Token::False => {}
+            Token::Command(_) => {
+                todo!()
+            }
+            Token::Function => {
+                todo!()
+            }
+            Token::Let => {
+                todo!()
+            }
+            Token::Const => {
+                todo!()
+            }
+            Token::Guard => {
+                todo!()
+            }
+            Token::If => {
+                todo!()
+            }
+            Token::True => {
+                todo!()
+            }
+            Token::False => {
+                todo!()
+            }
+            Token::LCurly => {
+                // TODO: Scope
+                todo!()
+            }
             _ => panic!(
                 "Parser: Invalid token {:?} at ({}:{}).",
                 token, pos.0, pos.1
@@ -99,6 +119,7 @@ fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> Ast {
         "regex" => todo!(),
         "cmd" => todo!(),
         "return" => todo!(),
+        "inject" => todo!(), // Inject object fields into scope above. TODO: This should require the flag unsafe_inject.
         "spawn" => todo!(),
         "parallel" => todo!(),
         "triplet" => todo!(),

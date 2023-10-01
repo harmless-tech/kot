@@ -29,7 +29,7 @@ impl EntryArgsImm {
     }
 }
 
-pub fn collect_args() -> (EntryArgs, String) {
+pub fn collect_args() -> (EntryArgs, Option<String>) {
     let args = std::env::args().collect();
     let imm = parse_args(args);
     (flatten_args(imm), collect_env())
@@ -56,16 +56,16 @@ fn parse_args(args: Vec<String>) -> EntryArgsImm {
                 panic!("Args: Double dash (--) without any alphanumeric character after it is not allowed.");
             }
 
-            if a.starts_with("kot ") {
+            if a.starts_with("kot=") {
+                a.drain(0..4);
+                entry.kot.push(a);
+            }
+            else if a.starts_with("kot") {
                 let arg = args.next().expect("Args: No arguments after --kot.");
                 if arg.starts_with('-') {
                     panic!("Args: Dash (- | --) argument after --kot.");
                 }
                 entry.kot.push(arg);
-            }
-            else if a.starts_with("kot=") {
-                a.drain(0..4);
-                entry.kot.push(a);
             }
             else {
                 entry.double.push((a.clone(), Vec::new()));
@@ -134,10 +134,10 @@ fn split_eq(s: &mut String) -> Option<String> {
     None
 }
 
-fn collect_env() -> String {
+fn collect_env() -> Option<String> {
     match std::env::var("KOT") {
-        Ok(e) => e,
-        Err(VarError::NotPresent) => String::new(),
+        Ok(e) => Some(e),
+        Err(VarError::NotPresent) => None,
         Err(VarError::NotUnicode(_)) => panic!("Env: 'KOT' env var is not valid unicode."),
     }
 }

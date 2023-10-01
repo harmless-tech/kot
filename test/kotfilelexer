@@ -7,7 +7,8 @@
 # Allows kot to cache the ast of this file under .kotfile.cache.
 # Tells kot the max amount of cmds to run in parallel. (Kot itself will always use a max of two threads unless build with --no-default-features)
 # Tells kot to only run this file if it supports i64 as its int type.
-#kot cache=true,children=4,require_i64=true
+# Allows .inject.
+#kot cache=true,children=4,require_i64=true,unsafe_inject
 
 .triplet aarch64-apple-darwin { }
 .os macos linux { let kot.shell = ""  }
@@ -38,6 +39,9 @@ cmd
 guard if let ll = kot.dev.none {
     .panic "Wrong!"
 }
+
+.inject { let ia = "This is a string." .return { ia } }
+# ia is now in this scope.
 
 .regex regex (gmxUsi) { "h{0}" }
 let m1 = regex.match("hello").0

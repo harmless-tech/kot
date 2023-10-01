@@ -35,18 +35,6 @@ impl Display for ExToken {
     }
 }
 
-#[derive(Debug)]
-pub struct ExConfig {
-    config: String,
-    line: usize,
-    col: usize,
-}
-impl ExConfig {
-    fn new(config: String, line: usize, col: usize) -> Self {
-        Self { config, line, col }
-    }
-}
-
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Token {
     Ident(String),
@@ -94,11 +82,11 @@ pub enum Token {
 // TODO: Use struct instead of macros to allow big functions to become smaller ones.
 
 /// (Vec of Tokens, Vec of configs)
-pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
+pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
     let contents: Vec<char> = content.chars().collect();
 
     let mut tokens: Vec<ExToken> = Vec::new();
-    let mut config: Vec<ExConfig> = Vec::new();
+    let mut config: Vec<String> = Vec::new();
 
     let mut index = 0_usize;
     let mut line = 1_usize;
@@ -156,11 +144,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<ExConfig>) {
                 // Comment
                 let i = skip_comment(&contents, index);
                 if next == 'k' && peek!(2) == 'o' && peek!(3) == 't' && peek!(4) == ' ' {
-                    config.push(ExConfig::new(
-                        contents[(index + 5)..i].iter().collect(),
-                        line,
-                        col,
-                    ));
+                    config.push(contents[(index + 5)..i].iter().collect());
                 }
                 index = i;
             }
@@ -460,7 +444,7 @@ mod test {
             }
 
             for (l, c) in l.1.iter().zip(c) {
-                assert!(l.config.eq(&c.to_string()));
+                assert!(l.eq(&c.to_string()));
             }
         }};
     }

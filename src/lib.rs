@@ -12,6 +12,7 @@ pub mod config;
 pub mod lexer;
 pub mod parser;
 pub mod platform;
+mod tmp;
 pub mod vm;
 
 #[cfg(test)]

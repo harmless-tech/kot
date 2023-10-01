@@ -14,6 +14,7 @@ Identifiers with a . in front of them are special since they can have special ru
 
 - cmd
 - return
+- inject
 - spawn
 - parallel
 
