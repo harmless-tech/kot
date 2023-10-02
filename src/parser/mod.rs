@@ -10,7 +10,7 @@ use crate::{
 use std::{iter::Peekable, vec::IntoIter};
 
 type ParseResult = anyhow::Result<Ast>;
-type ParseResultLast = anyhow::Result<(Ast, Token)>;
+type ParseResultLast = anyhow::Result<(Ast, ExToken)>;
 
 // TODO: Improve error messages.
 // TODO: No panic!!!!
@@ -59,7 +59,17 @@ pub fn parse(tokens: Vec<ExToken>, config: &Config) -> ParseResult {
 
 fn p_root(data: &mut ParseData) -> ParseResult {
     // TODO: Test blank kotfile.
-    Ok(p(data)?.0)
+    let (ast, token) = p(data)?;
+    match token {
+        ExToken {
+            token: Token::Eof, ..
+        } => {}
+        ex => panic!(
+            "Parser: Invalid token {:?} at ({}:{}). Expected Eof.",
+            ex.token, ex.line, ex.col
+        ),
+    }
+    Ok(ast)
 }
 
 /// Anything that can be on the global scope.
@@ -89,15 +99,14 @@ fn p(data: &mut ParseData) -> ParseResultLast {
                 let (a, t) = p(data)?;
                 ast.push(Ast::Scope(Box::new(a)));
                 match t {
-                    Token::RCurly => {}
+                    ExToken {
+                        token: Token::RCurly,
+                        ..
+                    } => {}
                     _ => panic!("Parser: Scope not closed. ({}:{})", pos.0, pos.1),
                 }
             }
             _ => break,
-            // _ => panic!(
-            //     "Parser: Invalid token {:?} at ({}:{}).",
-            //     token, pos.0, pos.1
-            // ),
         }
 
         let ex = data.next();
@@ -105,5 +114,12 @@ fn p(data: &mut ParseData) -> ParseResultLast {
         token = ex.token;
     }
 
-    Ok((Block(ast), token))
+    Ok((
+        Block(ast),
+        ExToken {
+            token,
+            line: pos.0,
+            col: pos.1,
+        },
+    ))
 }

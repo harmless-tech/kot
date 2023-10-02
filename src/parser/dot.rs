@@ -71,7 +71,7 @@ fn dot_exit(pos: Pos, token: ExToken) -> ParseResult {
             };
             Ast::Exit(Types::Integer(i.into()))
         }
-        token => panic!(
+        _ => panic!(
             "Parser: Must have i32 or identifier after .exit. ({}:{})",
             pos.0, pos.1
         ),
