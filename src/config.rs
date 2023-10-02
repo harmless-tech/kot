@@ -4,6 +4,9 @@ use std::str::FromStr;
 pub struct Config {
     /// Print version info and exit. (Default: false)
     pub version: bool,
+    /// List all cmds. (Default: false)
+    // TODO
+    pub list: bool,
     /// Cache kotfile AST under .kotfile.cache. (Default: false)
     // TODO
     pub cache: bool,
@@ -103,6 +106,7 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             version: false,
+            list: false,
             cache: false,
             children: num_cpus::get(),
             require_i64: false,

@@ -350,41 +350,36 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                     _ => {
                         // TODO: This can skip over EOF?
                         let word_index = get_word(&contents, index + 1);
-                        let word: String = contents[index..word_index].iter().collect();
+                        let word: String = contents[(index + 1)..word_index].iter().collect();
                         token!(Dot, word);
                         col += word_index - index;
                         index = word_index;
                     }
                 }
             }
-            ('a'..='z' | 'A'..='Z' | '_' | '-' | '0'..='9', _) => {
+            ('-' | '0'..='9', _) => {
+                let int_index = get_int(&contents, index);
+                let int: String = contents[index..int_index].iter().collect();
+
+                token!(Int, int);
+
+                col += int_index - index;
+                index = int_index;
+            }
+            ('a'..='z' | 'A'..='Z' | '_', _) => {
                 let word_index = get_word(&contents, index);
                 let word: String = contents[index..word_index].iter().collect();
 
-                macro_rules! insert_word {
-                    () => {
-                        match word.as_str() {
-                            "fn" => token!(Function),
-                            "let" => token!(Let),
-                            "const" => token!(Const),
-                            "guard" => token!(Guard),
-                            "if" => token!(If),
-                            "else" => token!(Else),
-                            "true" => token!(True),
-                            "false" => token!(False),
-                            _ => token!(Ident, word),
-                        }
-                    };
-                }
-                macro_rules! insert_int {
-                    () => {{
-                        token!(Int, word);
-                    }};
-                }
-
-                match *c {
-                    '-' | '0'..='9' => insert_int!(),
-                    _ => insert_word!(),
+                match word.as_str() {
+                    "fn" => token!(Function),
+                    "let" => token!(Let),
+                    "const" => token!(Const),
+                    "guard" => token!(Guard),
+                    "if" => token!(If),
+                    "else" => token!(Else),
+                    "true" => token!(True),
+                    "false" => token!(False),
+                    _ => token!(Ident, word),
                 }
 
                 col += word_index - index;
@@ -416,12 +411,16 @@ fn skip_comment(contents: &[char], mut index: usize) -> usize {
     index
 }
 
+fn get_int(contents: &[char], mut index: usize) -> usize {
+    while index < contents.len() && (contents[index].is_numeric() || contents[index] == '-') {
+        index += 1;
+    }
+    index
+}
+
 fn get_word(contents: &[char], mut index: usize) -> usize {
     while index < contents.len()
-        && (contents[index].is_alphanumeric()
-            || contents[index] == '-'
-            || contents[index] == '_'
-            || contents[index] == '.')
+        && (contents[index].is_alphanumeric() || contents[index] == '_' || contents[index] == '.')
     {
         index += 1;
     }

@@ -3,11 +3,11 @@
 mod dot;
 
 use crate::{
-    ast::{Ast, Ast::Block, Types},
+    ast::{Ast, Ast::Block, IdentFill, Types},
     config::Config,
     lexer::{ExToken, Token},
 };
-use std::{iter::Peekable, vec::IntoIter};
+use std::{cell::OnceCell, iter::Peekable, vec::IntoIter};
 
 type ParseResult = anyhow::Result<Ast>;
 type ParseResultLast = anyhow::Result<(Ast, ExToken)>;
@@ -122,4 +122,78 @@ fn p(data: &mut ParseData) -> ParseResultLast {
             col: pos.1,
         },
     ))
+}
+
+fn p_template(mut tmpl: String) -> anyhow::Result<IdentFill> {
+    use aho_corasick::{AhoCorasickBuilder, AhoCorasickKind, Match, MatchKind};
+
+    let cell = OnceCell::new();
+    let ac = cell.get_or_init(|| {
+        AhoCorasickBuilder::new()
+            .kind(Some(AhoCorasickKind::DFA))
+            .match_kind(MatchKind::LeftmostFirst)
+            .build(["{{", "}}"])
+            .unwrap()
+    });
+
+    // We assume that this is order correctly.
+    let m: Vec<Match> = ac.find_iter(&tmpl).collect();
+    if m.len() & 1 != 0 {
+        panic!("TODO: Uneven templ");
+    }
+    let m: Vec<_> = m.chunks_exact(2).collect();
+
+    const START: usize = 0;
+    const END: usize = 1;
+
+    let mut sub = 0;
+    let mut ident_fills = Vec::new();
+
+    for m in m {
+        let s = m[START];
+        let e = m[END];
+
+        match (s.pattern().as_usize(), e.pattern().as_usize()) {
+            (START, END) => {
+                let pos = s.start() - sub;
+                let mut section: String = tmpl.drain(pos..(e.end() - sub)).collect();
+                sub += section.len();
+
+                let ident: String = section.drain(2..(section.len() - 2)).collect();
+                let ident = ident.trim();
+
+                if ident.is_empty() {
+                    panic!("TODO: No ident in Tmpl");
+                }
+                if !ident
+                    .chars()
+                    .all(|c| c.is_alphanumeric() || c == '_' || c == '.' && ident.starts_with('.'))
+                {
+                    panic!("TODO: Not valid ident in Tmpl");
+                }
+
+                ident_fills.insert(0, (pos, String::from(ident)));
+            }
+            (START, START) => panic!("TODO: Tmpl in Tmpl"),
+            (END, END) => panic!("TODO: No start Tmpl ({{{{)"),
+            (END, START) => panic!("TODO: End Tmpl comes before start Tmpl"),
+            _ => panic!("TODO: This should never happen"),
+        }
+    }
+
+    Ok(ident_fills)
+}
+
+#[cfg(test)]
+mod test {
+    use crate::parser::p_template;
+
+    #[test]
+    fn tt3() {
+        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
+        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
+        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
+        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
+        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
+    }
 }

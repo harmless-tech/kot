@@ -4,6 +4,7 @@ use rustc_hash::FxHashMap;
 // TODO: Expand and fix this while doing the parser.
 
 pub type Ident = String;
+pub type IdentFill = Vec<(usize, Ident)>;
 pub type RAst = Box<Ast>;
 
 #[derive(Debug)]
@@ -14,6 +15,8 @@ pub enum Ast {
     Scope(RAst),
     /// Ident or Command
     RunCommand(Types),
+    /// Ident or Command
+    SpawnCommand(Types),
     /// Ident or Integer
     Exit(Types),
     /// Ident or String

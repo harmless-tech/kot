@@ -88,8 +88,8 @@ b.success # If not true, then kot will stop here.
     }
 
     .cmd 23 { # Subcommand (Inherits args from above)
-        let p = .parallel (no_fail: true) { # Runs commands in parallel maxing out at however many cpu cores there are. (Use '#kot threads=$NUMBER' to set manually)
-            let a =
+        let p = .parallel 1 { # Runs commands in parallel maxing out at however many cpu cores there are. (Use '#kot threads=$NUMBER' to set manually, or put an int after)
+            let a = .try `echo 1` # Kills if cmd fails.
 
             .return { a } # Returns an object with a in it.
         }

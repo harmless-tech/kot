@@ -1,7 +1,7 @@
 # One to one creation of the justfile.
 
 .cmd {
-    `kot --kot=list=true`
+    `kot --kot=list`
 }
 
 .cmd run {

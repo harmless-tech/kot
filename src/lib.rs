@@ -9,10 +9,10 @@ type Pos = (usize, usize);
 pub mod args;
 pub mod ast;
 pub mod config;
+pub mod interp;
 pub mod lexer;
 pub mod parser;
 pub mod platform;
-pub mod vm;
 
 #[cfg(test)]
 mod test {

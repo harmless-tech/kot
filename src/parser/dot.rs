@@ -7,13 +7,15 @@ use crate::{
 
 pub(super) fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> ParseResult {
     match id.as_str() {
+        "object" => todo!(),
         "args" => todo!(),
         "regex" => todo!(),
         "cmd" => todo!(),
         "return" => todo!(),
-        "inject" => todo!(), // Inject object fields into scope above. TODO: This should require the flag unsafe_inject.
-        "spawn" => todo!(),
+        "inject" => todo!(), // Inject object fields into current scope or inject scope vars into scope above. TODO: This should require the flag unsafe_inject.
+        "spawn" => dot_spawn(data),
         "parallel" => todo!(),
+        "try" => todo!(),
         "triplet" => todo!(),
         "arch" => todo!(),
         "os" => todo!(),
@@ -25,6 +27,43 @@ pub(super) fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> ParseResult {
             id, pos.0, pos.1
         ),
     }
+}
+
+// TODO: Allow spawning of one cmd without block.
+fn dot_spawn(data: &mut ParseData) -> ParseResult {
+    let block_start_pos = match data.next() {
+        ExToken {
+            token: Token::LCurly,
+            line,
+            col,
+        } => (line, col),
+        ex => panic!(
+            "Parser: Expected block start ({{) after .spawn. ({}:{})",
+            ex.line, ex.col
+        ),
+    };
+
+    let mut ast = Vec::new();
+
+    let ex = data.next();
+    let mut pos = ex.pos();
+    let mut token = ex.token;
+
+    while token != Token::RCurly {
+        match token {
+            Token::Ident(id) => ast.push(Ast::SpawnCommand(Types::Ident(id))),
+            // TODO: Parse command.
+            Token::Command(cmd) => ast.push(Ast::SpawnCommand(Types::Command(cmd))),
+            Token::Eof => panic!("Parser: Reached EOF before closing .spawn block. ({}:{})", block_start_pos.0, block_start_pos.1),
+            token => panic!("Parser: Invalid token in .spawn block, {:?}. Only commands and idents are allowed. ({}:{})", token, pos.0, pos.1),
+        }
+
+        let ex = data.next();
+        pos = ex.pos();
+        token = ex.token;
+    }
+
+    Ok(Ast::Block(ast))
 }
 
 fn dot_panic(pos: Pos, token: ExToken) -> ParseResult {
