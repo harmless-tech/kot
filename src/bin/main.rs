@@ -6,7 +6,7 @@
 // TODO: Benchmark with smallvec to see if it is any faster.
 // TODO: Int math?
 
-use kot::{args, config::Config, lexer};
+use kot::{args, config::Config, lexer, parser::parse};
 
 fn main() -> anyhow::Result<()> {
     println!("TODO: Hello, world!"); // TODO: Remove!
@@ -21,7 +21,7 @@ fn main() -> anyhow::Result<()> {
 
     // Load kotfile
     // TODO: Should search for kotfile from a list!
-    let raw_kotfile = std::fs::read_to_string("./test/kotfile2").unwrap();
+    let raw_kotfile = std::fs::read_to_string("./test/kotfiledev").unwrap();
 
     // Lex kotfile
     let (tokens, f_args) = lexer::lex(&raw_kotfile);
@@ -33,8 +33,11 @@ fn main() -> anyhow::Result<()> {
     }
     config.configure_slice(&entry_args.kot)?;
     check_config(&config);
+    let config = config;
 
     // Parse kotfile
+    let ast = parse(tokens, &config)?;
+    dbg!(ast);
 
     // Cache?
     // Run AST

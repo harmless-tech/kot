@@ -6,6 +6,7 @@ use rustc_hash::FxHashMap;
 pub type Ident = String;
 pub type RAst = Box<Ast>;
 
+#[derive(Debug)]
 pub enum Ast {
     /// Ast and Some(Next Ast)
     Block(Vec<Ast>),
@@ -25,6 +26,7 @@ pub enum Ast {
     Let(Ident, Box<Ast>),
 }
 
+#[derive(Debug)]
 pub enum Types {
     Ident(String),
     String(String), // TODO: Allow templating!
@@ -35,6 +37,7 @@ pub enum Types {
     Object(FxHashMap<String, Types>),
 }
 
+#[derive(Debug)]
 pub enum DotExTypes {
     Triplet,
     OS,
