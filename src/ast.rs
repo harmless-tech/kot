@@ -7,10 +7,16 @@ pub type Ident = String;
 pub type RAst = Box<Ast>;
 
 pub enum Ast {
+    /// Ast and Some(Next Ast)
+    Block(Vec<Ast>),
+    /// Ast
+    Scope(RAst),
     /// Ident or Command
     RunCommand(Types),
     /// Ident or Integer
     Exit(Types),
+    /// Ident or String
+    Panic(Types),
 
     Id(Ident),
     DotEx(DotExTypes), // TODO
@@ -21,7 +27,7 @@ pub enum Ast {
 
 pub enum Types {
     Ident(String),
-    String(String),
+    String(String), // TODO: Allow templating!
     Command(String),
     Integer(Int),
     Boolean(bool),

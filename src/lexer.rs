@@ -80,6 +80,7 @@ pub enum Token {
 }
 
 // TODO: Use struct instead of macros to allow big functions to become smaller ones.
+// TODO: No panic!!!!
 
 /// (Vec of Tokens, Vec of configs)
 pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
