@@ -431,7 +431,6 @@ fn get_word(contents: &[char], mut index: usize) -> usize {
 #[cfg(test)]
 mod test {
     use crate::lexer::{lex, Token};
-    use std::fs;
 
     macro_rules! assert_lexer {
         ($t1:expr, $c1:expr, $l1:expr) => {{
@@ -463,11 +462,11 @@ mod test {
         );
     }
 
-    #[test]
-    fn lex_kotfilelexer() {
-        let file = fs::read_to_string("./test/kotfilelexer").unwrap();
-        dbg!(lex(file.as_str()));
-    }
+    // #[test]
+    // fn lex_kotfilelexer() {
+    //     let file = fs::read_to_string("./test/kotfilelexer").unwrap();
+    //     dbg!(lex(file.as_str()));
+    // }
 
     // #[test]
     // fn lex_kotfile2() {

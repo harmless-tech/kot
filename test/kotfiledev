@@ -4,8 +4,8 @@
     cmd_ident
 }
 
-.panic "STRING"
-.panic r"RAW"
+.panic "STRING {{ abc }}{{ kot.shell }}"
+.panic r"RAW {{ fill }}   "
 .panic panic_ident
 
 .exit -10

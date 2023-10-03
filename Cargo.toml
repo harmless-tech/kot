@@ -9,7 +9,7 @@ license = "MIT"
 repository = "https://github.com/harmless-tech/kot"
 categories = ["command-line-utilities", "development-tools"]
 keywords = ["command-line", "task", "runner", "development", "utility"]
-#rust-version = "1.70"
+rust-version = "1.70"
 include = [
     "src/",
     "Cargo.lock",
@@ -28,6 +28,7 @@ path = "src/lib.rs"
 [dependencies]
 aho-corasick = "1.1.1"
 anyhow = "1.0.75"
+bitflags = { version = "2.4.0", features = ["std"] }
 num_cpus = "1.16.0"
 rustc-hash = "1.1.0"
 

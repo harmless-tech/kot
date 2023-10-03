@@ -1,9 +1,13 @@
 #![allow(unused_variables)] // TODO: Remove!
 
 mod dot;
+mod unwrap;
+
+// Export error types.
+pub use unwrap::{TypeError, TypeId};
 
 use crate::{
-    ast::{Ast, Ast::Block, IdentFill, Types},
+    ast::{Ast, Ast::Block, AstType, IdentFill},
     config::Config,
     lexer::{ExToken, Token},
 };
@@ -15,10 +19,8 @@ type ParseResultLast = anyhow::Result<(Ast, ExToken)>;
 // TODO: Improve error messages.
 // TODO: No panic!!!!
 
-// TODO: Handle {{}} in strings.
-
-// TODO: Get rid of this and pass by args?
-// TODO: Remove config since right now you can only configure the vm and outside stuff.
+// TODO: Get rid of this struct and pass by args?
+// TODO: Remove config since right now you can only configure the interpreter and outside stuff?
 struct ParseData<'a> {
     tokens: Peekable<IntoIter<ExToken>>,
     config: &'a Config,
@@ -72,7 +74,6 @@ fn p_root(data: &mut ParseData) -> ParseResult {
     Ok(ast)
 }
 
-/// Anything that can be on the global scope.
 fn p(data: &mut ParseData) -> ParseResultLast {
     let mut ast = Vec::new();
 
@@ -84,7 +85,7 @@ fn p(data: &mut ParseData) -> ParseResultLast {
         match token {
             Token::Ident(id) => match data.peek().token {
                 Token::LParen => todo!(), // TODO: Function Call
-                _ => ast.push(Ast::RunCommand(Types::Ident(id))),
+                _ => ast.push(Ast::RunCommand(AstType::Ident(id))),
             },
             Token::Dot(id) => ast.push(dot::p_dot(id, pos, data)?),
             Token::Command(_) => todo!(),
@@ -124,7 +125,7 @@ fn p(data: &mut ParseData) -> ParseResultLast {
     ))
 }
 
-fn p_template(mut tmpl: String) -> anyhow::Result<IdentFill> {
+fn p_template(mut tmpl: String) -> anyhow::Result<(String, IdentFill)> {
     use aho_corasick::{AhoCorasickBuilder, AhoCorasickKind, Match, MatchKind};
 
     let cell = OnceCell::new();
@@ -167,7 +168,7 @@ fn p_template(mut tmpl: String) -> anyhow::Result<IdentFill> {
                 }
                 if !ident
                     .chars()
-                    .all(|c| c.is_alphanumeric() || c == '_' || c == '.' && ident.starts_with('.'))
+                    .all(|c| c.is_alphanumeric() || c == '_' || c == '.' && !ident.starts_with('.'))
                 {
                     panic!("TODO: Not valid ident in Tmpl");
                 }
@@ -181,7 +182,7 @@ fn p_template(mut tmpl: String) -> anyhow::Result<IdentFill> {
         }
     }
 
-    Ok(ident_fills)
+    Ok((tmpl, ident_fills))
 }
 
 #[cfg(test)]
@@ -189,11 +190,16 @@ mod test {
     use crate::parser::p_template;
 
     #[test]
-    fn tt3() {
-        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
-        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
-        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
-        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
-        let _ = p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string());
+    fn templates() {
+        let _ =
+            p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string()).unwrap();
+        let _ =
+            p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string()).unwrap();
+        let _ =
+            p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string()).unwrap();
+        let _ =
+            p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string()).unwrap();
+        let _ =
+            p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string()).unwrap();
     }
 }

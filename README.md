@@ -2,6 +2,8 @@
 
 A command runner.
 
+TODO: Move types and errors to their own module?
+
 ## Info (TODO)
 
 ### Dot

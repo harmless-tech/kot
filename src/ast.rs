@@ -1,53 +1,36 @@
 use crate::Int;
-use rustc_hash::FxHashMap;
 
 // TODO: Expand and fix this while doing the parser.
 
 pub type Ident = String;
 pub type IdentFill = Vec<(usize, Ident)>;
-pub type RAst = Box<Ast>;
 
 #[derive(Debug)]
 pub enum Ast {
-    /// Ast and Some(Next Ast)
+    /// Vec<Ast>
     Block(Vec<Ast>),
     /// Ast
-    Scope(RAst),
+    Scope(Box<Ast>),
     /// Ident or Command
-    RunCommand(Types),
+    RunCommand(AstType),
     /// Ident or Command
-    SpawnCommand(Types),
+    SpawnCommand(AstType),
     /// Ident or Integer
-    Exit(Types),
+    Exit(AstType),
     /// Ident or String
-    Panic(Types),
-
-    Id(Ident),
-    DotEx(DotExTypes), // TODO
-    If(Box<Ast>, Box<Ast>, Option<Box<Ast>>),
-    IfLet(Ident, Box<Ast>, Box<Ast>, Option<Box<Ast>>),
-    Let(Ident, Box<Ast>),
+    Panic(AstType),
+    // If(Box<Ast>, Box<Ast>, Option<Box<Ast>>),
+    // IfLet(Ident, Box<Ast>, Box<Ast>, Option<Box<Ast>>),
+    // Let(Ident, Box<Ast>),
 }
 
 #[derive(Debug)]
-pub enum Types {
+pub enum AstType {
     Ident(String),
-    String(String), // TODO: Allow templating!
-    Command(String),
+    String(String, IdentFill), // TODO: Allow templating!
+    Command(String, IdentFill),
     Integer(Int),
-    Boolean(bool),
-    Regex(), // TODO
-    Object(FxHashMap<String, Types>),
-}
-
-#[derive(Debug)]
-pub enum DotExTypes {
-    Triplet,
-    OS,
-    Family,
-    Arch,
-    Regex,
-    Args,
-    Cmd,
-    Parallel,
+    // Boolean(bool),
+    // Regex(), // TODO
+    // Object(FxHashMap<String, PType>),
 }

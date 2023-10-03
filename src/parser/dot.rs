@@ -1,7 +1,11 @@
 use crate::{
-    ast::{Ast, Types},
+    ast::{Ast, AstType},
     lexer::{ExToken, Token},
-    parser::{ParseData, ParseResult},
+    parser::{
+        p_template,
+        unwrap::{p_unwrap_type, TypeId},
+        ParseData, ParseResult,
+    },
     Pos,
 };
 
@@ -30,6 +34,7 @@ pub(super) fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> ParseResult {
 }
 
 // TODO: Allow spawning of one cmd without block.
+// TODO: Shortcut for blocks.
 fn dot_spawn(data: &mut ParseData) -> ParseResult {
     let block_start_pos = match data.next() {
         ExToken {
@@ -51,9 +56,11 @@ fn dot_spawn(data: &mut ParseData) -> ParseResult {
 
     while token != Token::RCurly {
         match token {
-            Token::Ident(id) => ast.push(Ast::SpawnCommand(Types::Ident(id))),
-            // TODO: Parse command.
-            Token::Command(cmd) => ast.push(Ast::SpawnCommand(Types::Command(cmd))),
+            Token::Ident(id) => ast.push(Ast::SpawnCommand(AstType::Ident(id))),
+            Token::Command(cmd) => {
+                let (str, fill) = p_template(cmd)?;
+                ast.push(Ast::SpawnCommand(AstType::Command(str, fill)))
+            },
             Token::Eof => panic!("Parser: Reached EOF before closing .spawn block. ({}:{})", block_start_pos.0, block_start_pos.1),
             token => panic!("Parser: Invalid token in .spawn block, {:?}. Only commands and idents are allowed. ({}:{})", token, pos.0, pos.1),
         }
@@ -67,52 +74,11 @@ fn dot_spawn(data: &mut ParseData) -> ParseResult {
 }
 
 fn dot_panic(pos: Pos, token: ExToken) -> ParseResult {
-    Ok(match token {
-        ExToken {
-            token: Token::Ident(id),
-            ..
-        } => Ast::Panic(Types::Ident(id)),
-        ExToken {
-            token: Token::String(str),
-            ..
-        } => {
-            // TODO: Parse String.
-            Ast::Panic(Types::String(str))
-        }
-        ExToken {
-            token: Token::RawString(raw),
-            ..
-        } => {
-            // TODO: Allow option for parsing raw string.
-            Ast::Panic(Types::String(raw))
-        }
-        token => panic!(
-            "Parser: Must have string, raw string, or identifier after .panic. ({}:{})",
-            pos.0, pos.1
-        ),
-    })
+    let t = p_unwrap_type(token, TypeId::Ident | TypeId::String | TypeId::RawString)?;
+    Ok(Ast::Panic(t))
 }
 
 fn dot_exit(pos: Pos, token: ExToken) -> ParseResult {
-    Ok(match token {
-        ExToken {
-            token: Token::Ident(id),
-            ..
-        } => Ast::Exit(Types::Ident(id)),
-        ExToken {
-            token: Token::Int(i),
-            line,
-            col,
-        } => {
-            let i: i32 = match i.parse() {
-                Ok(i) => i,
-                Err(_) => panic!("Parser: Could not parse i32 after .exit. ({line}:{col})"),
-            };
-            Ast::Exit(Types::Integer(i.into()))
-        }
-        _ => panic!(
-            "Parser: Must have i32 or identifier after .exit. ({}:{})",
-            pos.0, pos.1
-        ),
-    })
+    let t = p_unwrap_type(token, TypeId::Ident | TypeId::Integer)?;
+    Ok(Ast::Exit(t))
 }
