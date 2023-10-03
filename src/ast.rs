@@ -19,6 +19,14 @@ pub enum Ast {
     Exit(AstType),
     /// Ident or String
     Panic(AstType),
+    /// Triplets and Ast
+    Triplets(Vec<Ident>, Box<Ast>),
+    /// Arches and Ast
+    Arches(Vec<Ident>, Box<Ast>),
+    /// OSes and Ast
+    OSes(Vec<Ident>, Box<Ast>),
+    /// Families and Ast
+    Families(Vec<Ident>, Box<Ast>),
     // If(Box<Ast>, Box<Ast>, Option<Box<Ast>>),
     // IfLet(Ident, Box<Ast>, Box<Ast>, Option<Box<Ast>>),
     // Let(Ident, Box<Ast>),

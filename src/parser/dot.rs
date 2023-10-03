@@ -2,11 +2,11 @@ use crate::{
     ast::{Ast, AstType},
     lexer::{ExToken, Token},
     parser::{
-        p_template,
+        p_block, p_template,
         unwrap::{p_unwrap_type, TypeId},
         ParseData, ParseResult,
     },
-    Pos,
+    platform, Pos,
 };
 
 pub(super) fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> ParseResult {
@@ -20,10 +20,22 @@ pub(super) fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> ParseResult {
         "spawn" => dot_spawn(data),
         "parallel" => todo!(),
         "try" => todo!(),
-        "triplet" => todo!(),
-        "arch" => todo!(),
-        "os" => todo!(),
-        "family" => todo!(),
+        "triplet" => {
+            let (strings, ast) = machine_check(data, None)?;
+            Ok(Ast::Triplets(strings, ast))
+        }
+        "arch" => {
+            let (strings, ast) = machine_check(data, Some(platform::ARCHES))?;
+            Ok(Ast::Arches(strings, ast))
+        }
+        "os" => {
+            let (strings, ast) = machine_check(data, Some(platform::OSES))?;
+            Ok(Ast::OSes(strings, ast))
+        }
+        "family" => {
+            let (strings, ast) = machine_check(data, Some(platform::OS_FAMILIES))?;
+            Ok(Ast::Families(strings, ast))
+        }
         "panic" => dot_panic(pos, data.next()), // How to handle string vs raw string
         "exit" => dot_exit(pos, data.next()),
         _ => panic!(
@@ -71,6 +83,58 @@ fn dot_spawn(data: &mut ParseData) -> ParseResult {
     }
 
     Ok(Ast::Block(ast))
+}
+
+fn machine_check(
+    data: &mut ParseData,
+    checklist: Option<&[&str]>,
+) -> anyhow::Result<(Vec<String>, Box<Ast>)> {
+    let mut strs = Vec::new();
+
+    let ex = data.next();
+    let mut pos = ex.pos();
+    let mut token = ex.token;
+
+    while let Token::String(t) = token {
+        if let Some(check) = checklist {
+            if check.contains(&t.as_str()) {
+                strs.push(t);
+            }
+            else {
+                panic!(
+                    "Parser: Invalid option at {}:{}. Supported options are {:?}.",
+                    pos.0, pos.1, check
+                )
+            }
+        }
+        else {
+            strs.push(t);
+        }
+
+        let ex = data.next();
+        pos = ex.pos();
+        token = ex.token;
+    }
+
+    match token {
+        Token::LCurly => {}
+        _ => panic!(
+            "Parser: Expected block start ({{) after .DOT [STRINGS]. Found token {:?}. ({}:{})",
+            token, pos.0, pos.1
+        ),
+    };
+
+    let (ast, last) = p_block(data)?;
+
+    match last {
+        ExToken {
+            token: Token::RCurly,
+            ..
+        } => {}
+        _ => panic!("Parser: Scope not closed. ({}:{})", pos.0, pos.1),
+    }
+
+    Ok((strs, ast.into()))
 }
 
 fn dot_panic(pos: Pos, token: ExToken) -> ParseResult {

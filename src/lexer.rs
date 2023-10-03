@@ -260,7 +260,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                     let word: String = contents[(index + 1)..(index + str_index)].iter().collect();
                     token!(String, word);
                     index += str_index + 1;
-                    col = str_index + 1;
+                    col += str_index + 1;
                 }
             }
             ('r', '#' | '"') => {

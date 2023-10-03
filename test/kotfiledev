@@ -11,3 +11,8 @@
 .exit -10
 .exit 10
 .exit exit_ident
+
+.triplet "aaa-aaa" "bbb-bbb" "ccc-ccc" { .exit -10 }
+.arch "aarch64" "s390x" "arm" { .exit -19 }
+.os "freebsd" "macos" { .exit -144 }
+.family "unix" { .exit 4 }

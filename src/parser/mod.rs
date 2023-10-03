@@ -61,7 +61,7 @@ pub fn parse(tokens: Vec<ExToken>, config: &Config) -> ParseResult {
 
 fn p_root(data: &mut ParseData) -> ParseResult {
     // TODO: Test blank kotfile.
-    let (ast, token) = p(data)?;
+    let (ast, token) = p_block(data)?;
     match token {
         ExToken {
             token: Token::Eof, ..
@@ -74,7 +74,7 @@ fn p_root(data: &mut ParseData) -> ParseResult {
     Ok(ast)
 }
 
-fn p(data: &mut ParseData) -> ParseResultLast {
+fn p_block(data: &mut ParseData) -> ParseResultLast {
     let mut ast = Vec::new();
 
     let ex = data.next();
@@ -97,8 +97,8 @@ fn p(data: &mut ParseData) -> ParseResultLast {
             Token::True => todo!(),
             Token::False => todo!(),
             Token::LCurly => {
-                let (a, t) = p(data)?;
-                ast.push(Ast::Scope(Box::new(a)));
+                let (a, t) = p_block(data)?;
+                ast.push(Ast::Scope(a.into()));
                 match t {
                     ExToken {
                         token: Token::RCurly,

@@ -1,8 +1,8 @@
-pub static ARCHES: [&str; 5] = ["x86_64", "arm", "aarch64", "riscv64", "s390x"];
+pub static ARCHES: &[&str] = &["x86_64", "arm", "aarch64", "riscv64", "s390x"];
 
-pub static OSES: [&str; 4] = ["windows", "macos", "linux", "freebsd"];
+pub static OSES: &[&str] = &["windows", "macos", "linux", "freebsd"];
 
-pub static OS_FAMILIES: [&str; 2] = ["windows", "unix"];
+pub static OS_FAMILIES: &[&str] = &["windows", "unix"];
 
 pub mod current {
     pub static TRIPLET: &str = env!("TARGET");

@@ -44,7 +44,7 @@ pub(super) fn p_unwrap_type(token: ExToken, unwrap: TypeId) -> anyhow::Result<As
     }
     if unwrap.contains(TypeId::Integer) {
         if let Token::Int(str) = token.token {
-            let int: Int = str.parse()?;
+            let int: Int = str.parse()?; // TODO: This is bad no position info.
             return Ok(AstType::Integer(int));
         }
     }
