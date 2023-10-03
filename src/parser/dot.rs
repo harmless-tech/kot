@@ -45,8 +45,7 @@ pub(super) fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> ParseResult {
     }
 }
 
-// TODO: Allow spawning of one cmd without block.
-// TODO: Shortcut for blocks.
+// TODO: Allow spawning of one cmd without block?
 fn dot_spawn(data: &mut ParseData) -> ParseResult {
     let block_start_pos = match data.next() {
         ExToken {
@@ -62,34 +61,34 @@ fn dot_spawn(data: &mut ParseData) -> ParseResult {
 
     let mut ast = Vec::new();
 
-    let ex = data.next();
-    let mut pos = ex.pos();
-    let mut token = ex.token;
-
-    while token != Token::RCurly {
-        match token {
+    loop {
+        let token = data.next();
+        let pos = token.pos();
+        match token.token {
             Token::Ident(id) => ast.push(Ast::SpawnCommand(AstType::Ident(id))),
             Token::Command(cmd) => {
                 let (str, fill) = p_template(cmd)?;
                 ast.push(Ast::SpawnCommand(AstType::Command(str, fill)))
             },
+            Token::RCurly => break,
             Token::Eof => panic!("Parser: Reached EOF before closing .spawn block. ({}:{})", block_start_pos.0, block_start_pos.1),
             token => panic!("Parser: Invalid token in .spawn block, {:?}. Only commands and idents are allowed. ({}:{})", token, pos.0, pos.1),
         }
-
-        let ex = data.next();
-        pos = ex.pos();
-        token = ex.token;
     }
 
-    Ok(Ast::Block(ast))
+    // Scope is not needed here since we cannot create vars.
+    Ok(Ast::Block(ast).into())
 }
 
 fn machine_check(
     data: &mut ParseData,
     checklist: Option<&[&str]>,
 ) -> anyhow::Result<(Vec<String>, Box<Ast>)> {
-    let mut strs = Vec::new();
+    // TODO: Move block logic to shared fn.
+    // peak for LCurly
+    // send to p_block
+
+    let mut strings = Vec::new();
 
     let ex = data.next();
     let mut pos = ex.pos();
@@ -98,7 +97,7 @@ fn machine_check(
     while let Token::String(t) = token {
         if let Some(check) = checklist {
             if check.contains(&t.as_str()) {
-                strs.push(t);
+                strings.push(t);
             }
             else {
                 panic!(
@@ -108,7 +107,7 @@ fn machine_check(
             }
         }
         else {
-            strs.push(t);
+            strings.push(t);
         }
 
         let ex = data.next();
@@ -124,9 +123,9 @@ fn machine_check(
         ),
     };
 
-    let (ast, last) = p_block(data)?;
+    let ast = p_block(data)?;
 
-    match last {
+    match data.next() {
         ExToken {
             token: Token::RCurly,
             ..
@@ -134,7 +133,7 @@ fn machine_check(
         _ => panic!("Parser: Scope not closed. ({}:{})", pos.0, pos.1),
     }
 
-    Ok((strs, ast.into()))
+    Ok((strings, ast.into()))
 }
 
 fn dot_panic(pos: Pos, token: ExToken) -> ParseResult {

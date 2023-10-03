@@ -7,7 +7,7 @@ mod unwrap;
 pub use unwrap::{TypeError, TypeId};
 
 use crate::{
-    ast::{Ast, Ast::Block, AstType, IdentFill},
+    ast::{Ast, AstType, IdentFill},
     config::Config,
     lexer::{ExToken, Token},
 };
@@ -61,11 +61,9 @@ pub fn parse(tokens: Vec<ExToken>, config: &Config) -> ParseResult {
 
 fn p_root(data: &mut ParseData) -> ParseResult {
     // TODO: Test blank kotfile.
-    let (ast, token) = p_block(data)?;
-    match token {
-        ExToken {
-            token: Token::Eof, ..
-        } => {}
+    let ast = p_block(data)?;
+    match data.peek() {
+        ExToken { token: Token::Eof, .. } => {}
         ex => panic!(
             "Parser: Invalid token {:?} at ({}:{}). Expected Eof.",
             ex.token, ex.line, ex.col
@@ -74,55 +72,45 @@ fn p_root(data: &mut ParseData) -> ParseResult {
     Ok(ast)
 }
 
-fn p_block(data: &mut ParseData) -> ParseResultLast {
+// `let ExToken { token: TOKEN, .. } = data.next else { panic!() };` Should never panic.
+fn p_block(data: &mut ParseData) -> ParseResult {
     let mut ast = Vec::new();
 
-    let ex = data.next();
-    let mut pos = ex.pos();
-    let mut token = ex.token;
-
-    while token != Token::Eof {
-        match token {
-            Token::Ident(id) => match data.peek().token {
-                Token::LParen => todo!(), // TODO: Function Call
-                _ => ast.push(Ast::RunCommand(AstType::Ident(id))),
+    loop {
+        let look = data.peek();
+        match &look.token {
+            Token::Ident(id) => {
+                let ExToken { token: Token::Ident(id), .. } = data.next() else { panic!() };
+                match data.peek().token {
+                    Token::LParen => todo!(), // TODO: Function Call
+                    _ => ast.push(Ast::RunCommand(AstType::Ident(id))),
+                }
             },
-            Token::Dot(id) => ast.push(dot::p_dot(id, pos, data)?),
+            Token::Dot(id) => {
+                let ExToken { token: Token::Dot(id), line, col } = data.next() else { panic!() };
+                ast.push(dot::p_dot(id, (line, col), data)?)
+            },
             Token::Command(_) => todo!(),
             Token::Function => todo!(),
             Token::Let => todo!(),
             Token::Const => todo!(),
             Token::Guard => todo!(),
             Token::If => todo!(),
-            Token::True => todo!(),
-            Token::False => todo!(),
             Token::LCurly => {
-                let (a, t) = p_block(data)?;
+                let ExToken { token: Token::LCurly, line, col } = data.next() else { panic!() };
+                let a = p_block(data)?;
                 ast.push(Ast::Scope(a.into()));
-                match t {
-                    ExToken {
-                        token: Token::RCurly,
-                        ..
-                    } => {}
-                    _ => panic!("Parser: Scope not closed. ({}:{})", pos.0, pos.1),
+                match data.next().token {
+                    Token::RCurly => {}
+                    _ => panic!("Parser: Scope not closed. ({line}:{col})"),
                 }
             }
+            Token::Eof => break,
             _ => break,
         }
-
-        let ex = data.next();
-        pos = ex.pos();
-        token = ex.token;
     }
 
-    Ok((
-        Block(ast),
-        ExToken {
-            token,
-            line: pos.0,
-            col: pos.1,
-        },
-    ))
+    Ok(Ast::Block(ast))
 }
 
 fn p_template(mut tmpl: String) -> anyhow::Result<(String, IdentFill)> {

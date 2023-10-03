@@ -16,3 +16,11 @@
 .arch "aarch64" "s390x" "arm" { .exit -19 }
 .os "freebsd" "macos" { .exit -144 }
 .family "unix" { .exit 4 }
+
+{ .panic "disco" }
+
+.spawn {}
+.spawn {
+    `echo -n 'newline'`
+    cmd_ident
+}
