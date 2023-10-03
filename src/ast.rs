@@ -27,6 +27,7 @@ pub enum Ast {
     OSes(Vec<Ident>, Box<Ast>),
     /// Families and Ast
     Families(Vec<Ident>, Box<Ast>),
+    // BinOp(OP, AST, AST)
     // If(Box<Ast>, Box<Ast>, Option<Box<Ast>>),
     // IfLet(Ident, Box<Ast>, Box<Ast>, Option<Box<Ast>>),
     // Let(Ident, Box<Ast>),
@@ -41,4 +42,5 @@ pub enum AstType {
     // Boolean(bool),
     // Regex(), // TODO
     // Object(FxHashMap<String, PType>),
+    // VOID: Interp only?
 }

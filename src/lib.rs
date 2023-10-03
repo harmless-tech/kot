@@ -9,7 +9,7 @@ type Pos = (usize, usize);
 pub mod args;
 pub mod ast;
 pub mod config;
-pub mod interp;
+pub mod interpreter;
 pub mod lexer;
 pub mod parser;
 pub mod platform;

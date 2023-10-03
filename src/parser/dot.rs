@@ -77,7 +77,7 @@ fn dot_spawn(data: &mut ParseData) -> ParseResult {
     }
 
     // Scope is not needed here since we cannot create vars.
-    Ok(Ast::Block(ast).into())
+    Ok(Ast::Block(ast))
 }
 
 fn machine_check(

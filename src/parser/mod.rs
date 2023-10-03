@@ -63,7 +63,9 @@ fn p_root(data: &mut ParseData) -> ParseResult {
     // TODO: Test blank kotfile.
     let ast = p_block(data)?;
     match data.peek() {
-        ExToken { token: Token::Eof, .. } => {}
+        ExToken {
+            token: Token::Eof, ..
+        } => {}
         ex => panic!(
             "Parser: Invalid token {:?} at ({}:{}). Expected Eof.",
             ex.token, ex.line, ex.col
@@ -80,16 +82,29 @@ fn p_block(data: &mut ParseData) -> ParseResult {
         let look = data.peek();
         match &look.token {
             Token::Ident(id) => {
-                let ExToken { token: Token::Ident(id), .. } = data.next() else { panic!() };
+                let ExToken {
+                    token: Token::Ident(id),
+                    ..
+                } = data.next()
+                else {
+                    panic!()
+                };
                 match data.peek().token {
                     Token::LParen => todo!(), // TODO: Function Call
                     _ => ast.push(Ast::RunCommand(AstType::Ident(id))),
                 }
-            },
+            }
             Token::Dot(id) => {
-                let ExToken { token: Token::Dot(id), line, col } = data.next() else { panic!() };
+                let ExToken {
+                    token: Token::Dot(id),
+                    line,
+                    col,
+                } = data.next()
+                else {
+                    panic!()
+                };
                 ast.push(dot::p_dot(id, (line, col), data)?)
-            },
+            }
             Token::Command(_) => todo!(),
             Token::Function => todo!(),
             Token::Let => todo!(),
@@ -97,7 +112,14 @@ fn p_block(data: &mut ParseData) -> ParseResult {
             Token::Guard => todo!(),
             Token::If => todo!(),
             Token::LCurly => {
-                let ExToken { token: Token::LCurly, line, col } = data.next() else { panic!() };
+                let ExToken {
+                    token: Token::LCurly,
+                    line,
+                    col,
+                } = data.next()
+                else {
+                    panic!()
+                };
                 let a = p_block(data)?;
                 ast.push(Ast::Scope(a.into()));
                 match data.next().token {

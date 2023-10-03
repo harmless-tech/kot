@@ -24,3 +24,13 @@
     `echo -n 'newline'`
     cmd_ident
 }
+
+# TODO: WIP - How will .args work.
+# Thinking that flag type will accept a short(opt), and long(opt). Requires at least a short or long.
+# Thinking that arg type will accept a regex, short(opt), and long(opt). Requires at least a short or long.
+let args = .args {
+    i: flag(-i, --i),
+    i123: flag(--i123),
+    op: arg(-1, --180, r"h{0}"gmxUsi)
+    op1: arg(-2, --280, "h{0}"gmxUsi)
+}

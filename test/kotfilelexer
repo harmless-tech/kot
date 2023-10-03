@@ -43,7 +43,10 @@ guard if let ll = kot.dev.none {
 .inject { let ia = "This is a string." .return { ia } }
 # ia is now in this scope.
 
-.regex regex (gmxUsi) { "h{0}" }
+.regex regex "h{0}"gmxUsi
+.regex regex r"h{0}"gmxUsi
+.regex r"h{0}"gmxUsi
+
 let m1 = regex.match("hello").0
 let m1 = regex.match("hello").result
 
