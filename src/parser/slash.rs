@@ -6,11 +6,40 @@ use crate::{
         unwrap::{p_unwrap_type, TypeId},
         ParseData, ParseResult,
     },
-    Pos,
+    platform, Pos,
 };
 
 pub(super) fn p_slash(id: TokenSlash, pos: Pos, data: &mut ParseData) -> ParseResult {
-    todo!()
+    match id {
+        TokenSlash::Triplet => {
+            let (strings, ast) = machine_check(data, None)?;
+            Ok(Ast::Triplets(strings, ast))
+        }
+        TokenSlash::Os => {
+            let (strings, ast) = machine_check(data, Some(platform::OSES))?;
+            Ok(Ast::OSes(strings, ast))
+        }
+        TokenSlash::Family => {
+            let (strings, ast) = machine_check(data, Some(platform::OS_FAMILIES))?;
+            Ok(Ast::Families(strings, ast))
+        }
+        TokenSlash::Arch => {
+            let (strings, ast) = machine_check(data, Some(platform::ARCHES))?;
+            Ok(Ast::Arches(strings, ast))
+        }
+        TokenSlash::Run => todo!(),
+        TokenSlash::Check => todo!(),
+        TokenSlash::Regex => todo!(),
+        TokenSlash::Object => todo!(),
+        TokenSlash::Args => todo!(),
+        TokenSlash::ArgsDef => todo!(),
+        TokenSlash::Cmd => todo!(),
+        TokenSlash::Parallel => todo!(),
+        TokenSlash::Spawn => slash_spawn(data),
+        TokenSlash::Panic => slash_panic(pos, data.next()),
+        TokenSlash::Exit => slash_exit(pos, data.next()),
+    }
+
     // match id.as_str() {
     //     "object" => todo!(),
     //     "args" => todo!(),

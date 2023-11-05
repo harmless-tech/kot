@@ -74,19 +74,19 @@ let c = `echo 'Run?'`
 if c.success { `echo success` } else { `echo fail` }
 let a = if c.success { true } else { false } # Useless since c.success is already a boolean.
 
-# Functions return whatever is on the last line.
+# Must have a explicit return.
 let function = fn (a, b, c) {
     let a = 100
     let b = 200
     let c = 300
-    /object { a, b, c } # Objects can steal from vars.
+    return /object { a, b, c } # Objects can steal from vars.
 }
 # Or you can do /return to return early.
 let function = fn (a, b, c) {
     let a = 100
     let b = 200
     let c = 300
-    /return a
+    return a
 }
 
 let cmd_str1 = r"echo '100'"

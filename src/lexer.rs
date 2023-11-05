@@ -380,6 +380,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                 }
             }
             ('/', _) => {
+                index += 1;
                 let word_index = get_word(&contents, index);
                 let word: String = contents[index..word_index].iter().collect();
 
@@ -399,8 +400,8 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                     "spawn" => token!(Slash, TokenSlash::Spawn),
                     "panic" => token!(Slash, TokenSlash::Panic),
                     "exit" => token!(Slash, TokenSlash::Exit),
-                    _ => panic!(
-                        "Lexer: Slash cmd at {line}:{col} does not match any know Slash cmd."
+                    word => panic!(
+                        "Lexer: Slash cmd {word} at {line}:{col} does not match any know Slash cmd."
                     ),
                 }
 
@@ -482,6 +483,7 @@ fn get_word(contents: &[char], mut index: usize) -> usize {
 #[cfg(test)]
 mod test {
     use crate::lexer::{lex, Token};
+    use std::fs;
 
     macro_rules! assert_lexer {
         ($t1:expr, $c1:expr, $l1:expr) => {{
@@ -513,15 +515,9 @@ mod test {
         );
     }
 
-    // #[test]
-    // fn lex_kotfilelexer() {
-    //     let file = fs::read_to_string("./test/kotfilelexer").unwrap();
-    //     dbg!(lex(file.as_str()));
-    // }
-
-    // #[test]
-    // fn lex_kotfile2() {
-    //     let file = fs::read_to_string("./test/kotfile2").unwrap();
-    //     dbg!(lex(file.as_str()));
-    // }
+    #[test]
+    fn lex_kotfile3() {
+        let file = fs::read_to_string("./test/kotfile3").unwrap();
+        dbg!(lex(file.as_str()));
+    }
 }
