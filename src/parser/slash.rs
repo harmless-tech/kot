@@ -39,40 +39,6 @@ pub(super) fn p_slash(id: TokenSlash, pos: Pos, data: &mut ParseData) -> ParseRe
         TokenSlash::Panic => slash_panic(pos, data.next()),
         TokenSlash::Exit => slash_exit(pos, data.next()),
     }
-
-    // match id.as_str() {
-    //     "object" => todo!(),
-    //     "args" => todo!(),
-    //     "regex" => todo!(),
-    //     "cmd" => todo!(),
-    //     "return" => todo!(),
-    //     "inject" => todo!(), // Inject object fields into current scope or inject scope vars into scope above. TODO: This should require the flag unsafe_inject.
-    //     "spawn" => dot_spawn(data),
-    //     "parallel" => todo!(),
-    //     "try" => todo!(),
-    //     "triplet" => {
-    //         let (strings, ast) = machine_check(data, None)?;
-    //         Ok(Ast::Triplets(strings, ast))
-    //     }
-    //     "arch" => {
-    //         let (strings, ast) = machine_check(data, Some(platform::ARCHES))?;
-    //         Ok(Ast::Arches(strings, ast))
-    //     }
-    //     "os" => {
-    //         let (strings, ast) = machine_check(data, Some(platform::OSES))?;
-    //         Ok(Ast::OSes(strings, ast))
-    //     }
-    //     "family" => {
-    //         let (strings, ast) = machine_check(data, Some(platform::OS_FAMILIES))?;
-    //         Ok(Ast::Families(strings, ast))
-    //     }
-    //     "panic" => dot_panic(pos, data.next()), // How to handle string vs raw string
-    //     "exit" => dot_exit(pos, data.next()),
-    //     _ => panic!(
-    //         "Parser: Invalid dot (.) type {} at ({}:{}).",
-    //         id, pos.0, pos.1
-    //     ),
-    // }
 }
 
 // TODO: Allow spawning of one cmd without block?
