@@ -1,5 +1,7 @@
 use std::env::VarError;
 
+// TODO: Store positional args that are not linked to any single or double quote differently?
+
 #[derive(Debug)]
 pub struct EntryArgs {
     pub kot: Vec<String>,

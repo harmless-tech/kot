@@ -1,5 +1,5 @@
 use crate::{
-    ast::{AstType, IdentFill},
+    ast::{Ast, AstType, IdentFill},
     lexer::{ExToken, Token},
     parser::p_template,
     Int,
@@ -18,34 +18,34 @@ bitflags! {
     }
 }
 
-pub(super) fn p_unwrap_type(token: ExToken, unwrap: TypeId) -> anyhow::Result<AstType> {
+pub(super) fn p_unwrap_type(token: ExToken, unwrap: TypeId) -> anyhow::Result<Box<Ast>> {
     if unwrap.contains(TypeId::Ident) {
         if let Token::Ident(str) = token.token {
-            return Ok(AstType::Ident(str));
+            return Ok(AstType::ident(str));
         }
     }
     if unwrap.contains(TypeId::String) {
         if let Token::String(str) = token.token {
             let (str, fill) = p_template(str)?;
-            return Ok(AstType::String(str, fill));
+            return Ok(AstType::string(str, fill));
         }
     }
     if unwrap.contains(TypeId::RawString) {
         // TODO: Allow config option to parse raw string?
         if let Token::RawString(str) = token.token {
-            return Ok(AstType::String(str, IdentFill::new()));
+            return Ok(AstType::string(str, IdentFill::new()));
         }
     }
     if unwrap.contains(TypeId::Command) {
         if let Token::Command(str) = token.token {
             let (str, fill) = p_template(str)?;
-            return Ok(AstType::Command(str, fill));
+            return Ok(AstType::command(str, fill));
         }
     }
     if unwrap.contains(TypeId::Integer) {
         if let Token::Int(str) = token.token {
             let int: Int = str.parse()?; // TODO: This is bad no position info.
-            return Ok(AstType::Integer(int));
+            return Ok(AstType::integer(int));
         }
     }
 

@@ -1,6 +1,6 @@
 #![allow(unused_variables)] // TODO: Remove!
 
-mod dot;
+mod slash;
 mod unwrap;
 
 // Export error types.
@@ -91,19 +91,19 @@ fn p_block(data: &mut ParseData) -> ParseResult {
                 };
                 match data.peek().token {
                     Token::LParen => todo!(), // TODO: Function Call
-                    _ => ast.push(Ast::RunCommand(AstType::Ident(id))),
+                    _ => ast.push(Ast::RunCommand(AstType::ident(id))),
                 }
             }
-            Token::Dot(id) => {
+            Token::Slash(id) => {
                 let ExToken {
-                    token: Token::Dot(id),
+                    token: Token::Slash(id),
                     line,
                     col,
                 } = data.next()
                 else {
                     panic!()
                 };
-                ast.push(dot::p_dot(id, (line, col), data)?)
+                ast.push(slash::p_slash(id, (line, col), data)?)
             }
             Token::Command(_) => todo!(),
             Token::Function => todo!(),

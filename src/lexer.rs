@@ -1,6 +1,8 @@
 use crate::Pos;
 use std::fmt::{write, Display, Formatter};
 
+// TODO: Match kotfile3
+
 #[derive(Debug)]
 pub struct ExToken {
     pub token: Token,
@@ -38,7 +40,8 @@ impl Display for ExToken {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Token {
     Ident(String),
-    Dot(String),
+    DotIdent(String),
+    Slash(TokenSlash),
     Command(String),
     Int(String),
     String(String),
@@ -65,6 +68,7 @@ pub enum Token {
     Or,
 
     Function,
+    Return,
     Let,
     Const,
     Guard,
@@ -77,6 +81,25 @@ pub enum Token {
     RangeExclusive,
 
     Plus,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum TokenSlash {
+    Triplet,
+    Os,
+    Family,
+    Arch,
+    Run,
+    Check,
+    Regex,
+    Object,
+    Args,
+    ArgsDef,
+    Cmd,
+    Parallel,
+    Spawn,
+    Panic,
+    Exit,
 }
 
 // TODO: Use struct instead of macros to allow big functions to become smaller ones.
@@ -348,14 +371,41 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
                         col += 2;
                     }
                     _ => {
-                        // TODO: This can skip over EOF?
                         let word_index = get_word(&contents, index + 1);
                         let word: String = contents[(index + 1)..word_index].iter().collect();
-                        token!(Dot, word);
+                        token!(DotIdent, word);
                         col += word_index - index;
                         index = word_index;
                     }
                 }
+            }
+            ('/', _) => {
+                let word_index = get_word(&contents, index);
+                let word: String = contents[index..word_index].iter().collect();
+
+                match word.as_str() {
+                    "triplet" => token!(Slash, TokenSlash::Triplet),
+                    "os" => token!(Slash, TokenSlash::Os),
+                    "family" => token!(Slash, TokenSlash::Family),
+                    "arch" => token!(Slash, TokenSlash::Arch),
+                    "run" => token!(Slash, TokenSlash::Run),
+                    "check" => token!(Slash, TokenSlash::Check),
+                    "regex" => token!(Slash, TokenSlash::Regex),
+                    "object" => token!(Slash, TokenSlash::Object),
+                    "args" => token!(Slash, TokenSlash::Args),
+                    "argsdef" => token!(Slash, TokenSlash::ArgsDef),
+                    "cmd" => token!(Slash, TokenSlash::Cmd),
+                    "parallel" => token!(Slash, TokenSlash::Parallel),
+                    "spawn" => token!(Slash, TokenSlash::Spawn),
+                    "panic" => token!(Slash, TokenSlash::Panic),
+                    "exit" => token!(Slash, TokenSlash::Exit),
+                    _ => panic!(
+                        "Lexer: Slash cmd at {line}:{col} does not match any know Slash cmd."
+                    ),
+                }
+
+                col += word_index - index;
+                index = word_index;
             }
             ('-' | '0'..='9', _) => {
                 let int_index = get_int(&contents, index);
@@ -372,6 +422,7 @@ pub fn lex(content: &str) -> (Vec<ExToken>, Vec<String>) {
 
                 match word.as_str() {
                     "fn" => token!(Function),
+                    "return" => token!(Return),
                     "let" => token!(Let),
                     "const" => token!(Const),
                     "guard" => token!(Guard),

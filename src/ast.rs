@@ -12,13 +12,13 @@ pub enum Ast {
     /// Ast
     Scope(Box<Ast>),
     /// Ident or Command
-    RunCommand(AstType),
+    RunCommand(Box<Ast>),
     /// Ident or Command
-    SpawnCommand(AstType),
+    SpawnCommand(Box<Ast>),
     /// Ident or Integer
-    Exit(AstType),
+    Exit(Box<Ast>),
     /// Ident or String
-    Panic(AstType),
+    Panic(Box<Ast>),
     /// Triplets and Ast
     Triplets(Vec<Ident>, Box<Ast>),
     /// Arches and Ast
@@ -31,6 +31,7 @@ pub enum Ast {
     // If(Box<Ast>, Box<Ast>, Option<Box<Ast>>),
     // IfLet(Ident, Box<Ast>, Box<Ast>, Option<Box<Ast>>),
     // Let(Ident, Box<Ast>),
+    Type(AstType),
 }
 
 #[derive(Debug)]
@@ -43,4 +44,21 @@ pub enum AstType {
     // Regex(), // TODO
     // Object(FxHashMap<String, PType>),
     // VOID: Interp only?
+}
+impl AstType {
+    pub fn ident(ident: String) -> Box<Ast> {
+        Box::new(Ast::Type(AstType::Ident(ident)))
+    }
+
+    pub fn string(string: String, ident_fill: IdentFill) -> Box<Ast> {
+        Box::new(Ast::Type(AstType::String(string, ident_fill)))
+    }
+
+    pub fn command(command: String, ident_fill: IdentFill) -> Box<Ast> {
+        Box::new(Ast::Type(AstType::Command(command, ident_fill)))
+    }
+
+    pub fn integer(int: Int) -> Box<Ast> {
+        Box::new(Ast::Type(AstType::Integer(int)))
+    }
 }

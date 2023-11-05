@@ -1,0 +1,144 @@
+# Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
+# Version: --kot version == --kot version=true
+
+#kot version=false,cache,children=4
+
+# These cmds only depend on the kot binary itself, not the actual hardware.
+# Only run if kot's triplet is 'aarch64-apple-darwin'.
+/triplet aarch64-apple-darwin {}
+# Only run if the os is 'macos' or 'linux'.
+/os macos linux { kot.shell = "sh -c"  }
+# Only run if the os family is 'windows'.
+/family windows { kot.shell = "pwsh /NOLOGO /C" }
+# Only run on the 'x86_64' arch.
+/arch x86_64 { kot.env.AMD64 = true }
+
+# Commands
+# If this command fails then kot exits with its error code.
+`echo "Command!"`
+# If this command fails then kot does not immediately exit you must check if it fails. 
+let a = `echo "123"` # Commands run immediately.
+let a = /check `echo 123` # Check if command fails, or if a value is 0, false, "false".
+
+# Some type safety is enforced?
+# Regex
+let regex = /regex r"^r{1}$"m
+
+# Let is immutable.
+let obj = /object {
+    a: "123",
+    b: 23
+}
+
+# Var is mutable.
+# Makes a clone of obj above.
+var mix = obj
+
+# Strings
+let quote = "\""
+let s1 = "I am string!"
+let s2 = "Look, {{ s1 }}"
+let raw = r"{{ Curly }}"
+let str = "1" + "2"
+
+let argsdef = /argsdef {
+    i: flag(-i, -p, --flag),
+    p: arg(-i, -p, --flag, /regex r""gmxUsi),
+    pos0: pos(0)
+}
+
+# This evals args and puts them into an object.
+# You probably only want to do this inside a /cmd, since
+# it can consume the needed positional arg.
+let args = /args argsdef
+
+# Run if no postional args.
+# Once inside of a /cmd block kot will never leave it.
+/cmd {}
+
+# Run if 0th positional arg is 'test'.
+# /cmd's do not return.
+/cmd "test" {
+    # This will probably fail since /args consumes.
+    let a = /args argsdef
+}
+
+/cmd args.pos0 == "250" {
+    `echo "Pos 0 is 250!!!"`
+}
+
+# This command will only run if there is no positional arg, or 
+# if the 0th positional arg is not 'test'.
+let c = `echo 'Run?'`
+
+if c.success { `echo success` } else { `echo fail` }
+let a = if c.success { true } else { false } # Useless since c.success is already a boolean.
+
+# Functions return whatever is on the last line.
+let function = fn (a, b, c) {
+    let a = 100
+    let b = 200
+    let c = 300
+    /object { a, b, c } # Objects can steal from vars.
+}
+# Or you can do /return to return early.
+let function = fn (a, b, c) {
+    let a = 100
+    let b = 200
+    let c = 300
+    /return a
+}
+
+let cmd_str1 = r"echo '100'"
+let cmd_str2 = cmd_str1 + " && echo '200'"
+
+# Run commands in parallel.
+# How many cmds run at once is dependent on logical cores, or
+# the number that children is set to and/or set to per parallel block.
+# parallel_nofail can be set globally and/or per parallel block.
+# nofail will keep running all commands even if one fails. (Defaults to true)
+# Returns an object detailed belows as para_obj.
+#kot parallel_nofail
+let cmds = /parallel (nofail: true, children: 8) {
+    cmd_str1 # This block auto converts strings into commands.
+    cmd_str2
+}
+
+let c1 = "c"
+let c2 = "c2"
+let c3 = c1 + c2 # Allow strings, commands, and raw strings to be appended
+let c3 = c1 +. c2 # Allow strings, commands, and raw strings to be appended (With a space)
+
+let para_obj = /object {
+    # c0: command object of running cmd_str1
+    # c1: command object of running cmd_str2
+}
+
+guard cmds.c0.success {
+    `echo 'Command failed!'`
+    /exit 20
+}
+
+# == to `echo "Hello, world"`
+`echo "Hello, \
+    world"`
+
+# /spawn will spawn off a command then forgot about it.
+/spawn {
+    `echo "Away!"`
+}
+
+let c = 3
+let o = /object { a: 1, b: 2, c }
+let f_val = function(o.a, o.b, o.c)
+
+# Runs if 0.bc exists.
+if let e = o.bc {}
+# Runs if o.cb does not exist.
+guard let eg = o.cb {
+    /panic "o.cb does not exist!"
+}
+let cb = o.bc
+
+# Not needed, kot will 'auto' add this.
+/exit 0

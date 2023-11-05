@@ -2,7 +2,11 @@
 
 A command runner.
 
+TODO: How to handle .cmd. It should probably be special for speed.
+
 TODO: Move types and errors to their own module?
+
+TODO: Kot lib should be able to compile to wasm. So many interpreter should move to binary or be locked behind a feature.
 
 ## Info (TODO)
 

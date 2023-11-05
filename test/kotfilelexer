@@ -36,7 +36,7 @@ let sr = r#"""
 let cmd = `echo 20`
 cmd
 
-guard if let ll = kot.dev.none {
+guard let ll = kot.dev.none {
     .panic "Wrong!"
 }
 

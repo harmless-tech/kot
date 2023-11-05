@@ -1,52 +1,53 @@
 use crate::{
     ast::{Ast, AstType},
-    lexer::{ExToken, Token},
+    lexer::{ExToken, Token, TokenSlash},
     parser::{
         p_block, p_template,
         unwrap::{p_unwrap_type, TypeId},
         ParseData, ParseResult,
     },
-    platform, Pos,
+    Pos,
 };
 
-pub(super) fn p_dot(id: String, pos: Pos, data: &mut ParseData) -> ParseResult {
-    match id.as_str() {
-        "object" => todo!(),
-        "args" => todo!(),
-        "regex" => todo!(),
-        "cmd" => todo!(),
-        "return" => todo!(),
-        "inject" => todo!(), // Inject object fields into current scope or inject scope vars into scope above. TODO: This should require the flag unsafe_inject.
-        "spawn" => dot_spawn(data),
-        "parallel" => todo!(),
-        "try" => todo!(),
-        "triplet" => {
-            let (strings, ast) = machine_check(data, None)?;
-            Ok(Ast::Triplets(strings, ast))
-        }
-        "arch" => {
-            let (strings, ast) = machine_check(data, Some(platform::ARCHES))?;
-            Ok(Ast::Arches(strings, ast))
-        }
-        "os" => {
-            let (strings, ast) = machine_check(data, Some(platform::OSES))?;
-            Ok(Ast::OSes(strings, ast))
-        }
-        "family" => {
-            let (strings, ast) = machine_check(data, Some(platform::OS_FAMILIES))?;
-            Ok(Ast::Families(strings, ast))
-        }
-        "panic" => dot_panic(pos, data.next()), // How to handle string vs raw string
-        "exit" => dot_exit(pos, data.next()),
-        _ => panic!(
-            "Parser: Invalid dot (.) type {} at ({}:{}).",
-            id, pos.0, pos.1
-        ),
-    }
+pub(super) fn p_slash(id: TokenSlash, pos: Pos, data: &mut ParseData) -> ParseResult {
+    todo!()
+    // match id.as_str() {
+    //     "object" => todo!(),
+    //     "args" => todo!(),
+    //     "regex" => todo!(),
+    //     "cmd" => todo!(),
+    //     "return" => todo!(),
+    //     "inject" => todo!(), // Inject object fields into current scope or inject scope vars into scope above. TODO: This should require the flag unsafe_inject.
+    //     "spawn" => dot_spawn(data),
+    //     "parallel" => todo!(),
+    //     "try" => todo!(),
+    //     "triplet" => {
+    //         let (strings, ast) = machine_check(data, None)?;
+    //         Ok(Ast::Triplets(strings, ast))
+    //     }
+    //     "arch" => {
+    //         let (strings, ast) = machine_check(data, Some(platform::ARCHES))?;
+    //         Ok(Ast::Arches(strings, ast))
+    //     }
+    //     "os" => {
+    //         let (strings, ast) = machine_check(data, Some(platform::OSES))?;
+    //         Ok(Ast::OSes(strings, ast))
+    //     }
+    //     "family" => {
+    //         let (strings, ast) = machine_check(data, Some(platform::OS_FAMILIES))?;
+    //         Ok(Ast::Families(strings, ast))
+    //     }
+    //     "panic" => dot_panic(pos, data.next()), // How to handle string vs raw string
+    //     "exit" => dot_exit(pos, data.next()),
+    //     _ => panic!(
+    //         "Parser: Invalid dot (.) type {} at ({}:{}).",
+    //         id, pos.0, pos.1
+    //     ),
+    // }
 }
 
 // TODO: Allow spawning of one cmd without block?
-fn dot_spawn(data: &mut ParseData) -> ParseResult {
+fn slash_spawn(data: &mut ParseData) -> ParseResult {
     let block_start_pos = match data.next() {
         ExToken {
             token: Token::LCurly,
@@ -65,10 +66,10 @@ fn dot_spawn(data: &mut ParseData) -> ParseResult {
         let token = data.next();
         let pos = token.pos();
         match token.token {
-            Token::Ident(id) => ast.push(Ast::SpawnCommand(AstType::Ident(id))),
+            Token::Ident(id) => ast.push(Ast::SpawnCommand(AstType::ident(id))),
             Token::Command(cmd) => {
                 let (str, fill) = p_template(cmd)?;
-                ast.push(Ast::SpawnCommand(AstType::Command(str, fill)))
+                ast.push(Ast::SpawnCommand(AstType::command(str, fill)))
             },
             Token::RCurly => break,
             Token::Eof => panic!("Parser: Reached EOF before closing .spawn block. ({}:{})", block_start_pos.0, block_start_pos.1),
@@ -136,12 +137,12 @@ fn machine_check(
     Ok((strings, ast.into()))
 }
 
-fn dot_panic(pos: Pos, token: ExToken) -> ParseResult {
+fn slash_panic(pos: Pos, token: ExToken) -> ParseResult {
     let t = p_unwrap_type(token, TypeId::Ident | TypeId::String | TypeId::RawString)?;
     Ok(Ast::Panic(t))
 }
 
-fn dot_exit(pos: Pos, token: ExToken) -> ParseResult {
+fn slash_exit(pos: Pos, token: ExToken) -> ParseResult {
     let t = p_unwrap_type(token, TypeId::Ident | TypeId::Integer)?;
     Ok(Ast::Exit(t))
 }
