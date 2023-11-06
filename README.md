@@ -1,5 +1,7 @@
 # kot
 
+Currently experimental and is nowhere near a running state!
+
 A command runner.
 
 TODO: How to handle .cmd. It should probably be special for speed.
