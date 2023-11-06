@@ -4,6 +4,8 @@
 type Int = i64;
 #[cfg(not(feature = "i64"))]
 type Int = i32;
+
+/// (Line, Column)
 type Pos = (usize, usize);
 
 pub mod args;

@@ -80,10 +80,6 @@ fn machine_check(
     data: &mut ParseData,
     checklist: Option<&[&str]>,
 ) -> anyhow::Result<(Vec<String>, Box<Ast>)> {
-    // TODO: Move block logic to shared fn.
-    // peak for LCurly
-    // send to p_block
-
     let mut strings = Vec::new();
 
     let ex = data.next();
@@ -121,6 +117,8 @@ fn machine_check(
 
     let ast = p_block(data)?;
 
+    dbg!(&ast);
+
     match data.next() {
         ExToken {
             token: Token::RCurly,
@@ -129,7 +127,7 @@ fn machine_check(
         _ => panic!("Parser: Scope not closed. ({}:{})", pos.0, pos.1),
     }
 
-    Ok((strings, ast.into()))
+    Ok((strings, Ast::Scope(ast.into()).into()))
 }
 
 fn slash_panic(pos: Pos, token: ExToken) -> ParseResult {

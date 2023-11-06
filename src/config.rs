@@ -15,9 +15,9 @@ pub struct Config {
     pub children: usize,
     /// Require runtime to be using a 64bit int. (Default: false)
     pub require_i64: bool,
-    /// Allow .inject. (Default: false)
+    /// Makes it so /parallel does not stop after first failure. (Default: false)
     // TODO
-    pub unsafe_inject: bool,
+    pub parallel_no_fail: bool,
 }
 impl Config {
     pub fn new() -> Self {
@@ -69,7 +69,7 @@ impl Config {
                 "cache" => self.cache = Self::true_false(opt, val)?,
                 "children" => self.children = Self::num_usize(opt, val)?,
                 "require_i64" => self.require_i64 = Self::true_false(opt, val)?,
-                "unsafe_inject" => self.unsafe_inject = Self::true_false(opt, val)?,
+                "parallel_nofail" => self.parallel_no_fail = Self::true_false(opt, val)?,
                 _ => return Err(ConfigError::UnknownConfig(opt.to_string()).into()),
             }
         }
@@ -110,7 +110,7 @@ impl Default for Config {
             cache: false,
             children: num_cpus::get(),
             require_i64: false,
-            unsafe_inject: false,
+            parallel_no_fail: false,
         }
     }
 }

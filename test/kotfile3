@@ -1,28 +1,33 @@
 # Names: kotfile, .kotfile, Kotfile, .Kotfile, KOTFILE, .KOTFILE
 # Version: --kot version == --kot version=true
 
+### TODO: All commands will need a /run!!!
+
 #kot version=false,cache,children=4
 
 # These cmds only depend on the kot binary itself, not the actual hardware.
 # Only run if kot's triplet is 'aarch64-apple-darwin'.
-/triplet aarch64-apple-darwin {}
+/triplet "aarch64-apple-darwin" {}
 # Only run if the os is 'macos' or 'linux'.
-/os macos linux { kot.shell = "sh -c"  }
+/os "macos" "linux" { kot.shell = "sh -c"  }
 # Only run if the os family is 'windows'.
-/family windows { kot.shell = "pwsh /NOLOGO /C" }
+/family "windows" { kot.shell = "pwsh /NOLOGO /C" }
 # Only run on the 'x86_64' arch.
-/arch x86_64 { kot.env.AMD64 = true }
+/arch "x86_64" { kot.env.AMD64 = true }
 
 # Commands
 # If this command fails then kot exits with its error code.
-`echo "Command!"`
+/run `echo "Command!"`
 # If this command fails then kot does not immediately exit you must check if it fails. 
-let a = `echo "123"` # Commands run immediately.
+let a = /run `echo "123"` # Commands run immediately.
 let a = /check `echo 123` # Check if command fails, or if a value is 0, false, "false".
 
 # Some type safety is enforced?
 # Regex
 let regex = /regex r"^r{1}$"m
+let regex2 = regex
+# _ does not bind
+let _ = /check regex2("r").is_match
 
 # Let is immutable.
 let obj = /object {
@@ -89,6 +94,16 @@ let function = fn (a, b, c) {
     return a
 }
 
+let ii = {
+    let a1 = "a1"
+    let a2 = "a2"
+    let a3 = "a3"
+    return a1, a2, a3 # Returns a1, a2, a3 in an object (Sugar for 'return /object { a1, a2, a3 }')
+}
+
+# Returns nothing
+let void = {}
+
 let cmd_str1 = r"echo '100'"
 let cmd_str2 = cmd_str1 + " && echo '200'"
 
@@ -104,11 +119,6 @@ let cmds = /parallel (nofail: true, children: 8) {
     cmd_str2
 }
 
-let c1 = "c"
-let c2 = "c2"
-let c3 = c1 + c2 # Allow strings, commands, and raw strings to be appended
-let c3 = c1 +. c2 # Allow strings, commands, and raw strings to be appended (With a space)
-
 let para_obj = /object {
     # c0: command object of running cmd_str1
     # c1: command object of running cmd_str2
@@ -118,6 +128,11 @@ guard cmds.c0.success {
     `echo 'Command failed!'`
     /exit 20
 }
+
+let c1 = "c"
+let c2 = "c2"
+let c3 = c1 + c2 # Allow strings, commands, and raw strings to be appended
+let c3 = c1 +. c2 # Allow strings, commands, and raw strings to be appended (With a space)
 
 # == to `echo "Hello, world"`
 `echo "Hello, \
@@ -139,6 +154,11 @@ guard let eg = o.cb {
     /panic "o.cb does not exist!"
 }
 let cb = o.bc
+
+# Destructure objects
+let deobj = /object { item1: 12, item2: 13, }
+let (item1, item2) = deobj
+let (i1: item1, i2: item2) = deobj
 
 # Not needed, kot will 'auto' add this.
 /exit 0

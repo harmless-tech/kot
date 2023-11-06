@@ -1,28 +1,29 @@
 # One to one creation of the justfile.
 
-.cmd {
+/cmd {
     `kot --kot=list`
 }
 
-.cmd run {
+/cmd run {
     `cargo run -- {{kot.args.last}}`
 }
 
-.cmd runr {
+# TODO: Combine this and the run cmd.
+/cmd runr {
     `cargo run --release -- {{kot.args.last}}`
 }
 
-.cmd fmt {
+/cmd fmt {
     `cargo +nightly fmt`
 }
 
-.cmd check {
+/cmd check {
     `cargo +nightly fmt --check`
     `cargo clippy --all-targets --locked --workspace -- -D warnings`
     `cargo clippy --all-targets --locked --workspace --release -- -D warnings`
 }
 
-.cmd docker {
+/cmd docker {
     `docker run -it --rm --pull=always \
         -e CARGO_TARGET_DIR=/ptarget \
         --mount type=bind,source={{pwd}},target=/project \
@@ -32,7 +33,7 @@
         bash`
 }
 
-.cmd docker-alpine {
+/cmd docker-alpine {
     `docker run -it --rm --pull=always \
         -e CARGO_TARGET_DIR=/ptarget \
         --mount type=bind,source={{pwd}},target=/project \
@@ -42,7 +43,7 @@
         sh`
 }
 
-.cmd hack {
+/cmd hack {
     `docker run -t --rm --pull=always \
         -e CARGO_TARGET_DIR=/ptarget \
         --mount type=bind,source={{pwd}},target=/project \
@@ -56,7 +57,7 @@
         && cargo hack check --feature-powerset --no-dev-deps --verbose --workspace"`
 }
 
-.cmd msrv {
+/cmd msrv {
     `docker run -t --rm --pull=always \
         -e CARGO_TARGET_DIR=/ptarget \
         --mount type=bind,source={{pwd}},target=/project \
@@ -67,6 +68,6 @@
         && cargo msrv -- cargo check --verbose --locked'`
 }
 
-.cmd cargo-test-repo-kotfile {
+/cmd cargo-test-repo-kotfile {
     `echo '{{kot.args.last}}' > target/cargo-test-repo-kotfile`
 }

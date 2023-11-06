@@ -10,9 +10,9 @@ TODO: Kot lib should be able to compile to wasm. So many interpreter should move
 
 ## Info (TODO)
 
-### Dot
+### Slash
 
-Identifiers with a ```.``` in front of them can have special rules.
+Identifiers with a ```/``` in front of them can have special rules.
 
 - object
 - args
@@ -20,7 +20,7 @@ Identifiers with a ```.``` in front of them can have special rules.
 
 - cmd
 - return
-- inject: Inject object's fields into current scope ```.inject .object { a: 11 }```.
+- ???inject???: Inject object's fields into current scope ```.inject .object { a: 11 }```.
           Or injects vars in scope into scope above ```.inject { let b = 12 }```.
           Requires config option ```unsafe_inject```.
 - spawn: Only allows commands.
@@ -41,3 +41,4 @@ Identifiers with a ```.``` in front of them can have special rules.
 - kotfile2: broken
 - kotfilelexer: broken
 - kotfiledev: working
+- kotfile3: working

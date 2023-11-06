@@ -1,5 +1,6 @@
 #![allow(unused_variables)] // TODO: Remove!
 
+mod ops;
 mod slash;
 mod unwrap;
 
@@ -10,6 +11,7 @@ use crate::{
     ast::{Ast, AstType, IdentFill},
     config::Config,
     lexer::{ExToken, Token},
+    parser::ops::p_assign,
 };
 use std::{cell::OnceCell, iter::Peekable, vec::IntoIter};
 
@@ -21,6 +23,7 @@ type ParseResultLast = anyhow::Result<(Ast, ExToken)>;
 
 // TODO: Get rid of this struct and pass by args?
 // TODO: Remove config since right now you can only configure the interpreter and outside stuff?
+// TODO: Maybe this should just be a vector that can be push and pulled from.
 struct ParseData<'a> {
     tokens: Peekable<IntoIter<ExToken>>,
     config: &'a Config,
@@ -66,6 +69,16 @@ fn p_root(data: &mut ParseData) -> ParseResult {
         ExToken {
             token: Token::Eof, ..
         } => {}
+        ExToken {
+            token: Token::RCurly,
+            line,
+            col,
+        } => panic!(
+            "Parser: Invalid token {:?} at ({}:{}). A scope was closed that was never opened.",
+            Token::RCurly,
+            line,
+            col
+        ),
         ex => panic!(
             "Parser: Invalid token {:?} at ({}:{}). Expected Eof.",
             ex.token, ex.line, ex.col
@@ -74,24 +87,31 @@ fn p_root(data: &mut ParseData) -> ParseResult {
     Ok(ast)
 }
 
+// TODO: p_block opt!!!
+
 // `let ExToken { token: TOKEN, .. } = data.next else { panic!() };` Should never panic.
 fn p_block(data: &mut ParseData) -> ParseResult {
-    let mut ast = Vec::new();
+    let mut ast: Vec<Ast> = Vec::new();
 
     loop {
         let look = data.peek();
         match &look.token {
             Token::Ident(id) => {
                 let ExToken {
+                    // TODO: Macro?
                     token: Token::Ident(id),
-                    ..
+                    line,
+                    col,
                 } = data.next()
                 else {
                     panic!()
                 };
-                match data.peek().token {
+
+                let peek = data.peek();
+                match peek.token {
+                    Token::Assign => ast.push(p_assign(id, (line, col), data)?),
                     Token::LParen => todo!(), // TODO: Function Call
-                    _ => ast.push(Ast::RunCommand(AstType::ident(id))),
+                    _ => ast.push(Ast::Type(AstType::Ident(id))),
                 }
             }
             Token::Slash(id) => {
@@ -107,10 +127,12 @@ fn p_block(data: &mut ParseData) -> ParseResult {
             }
             Token::Command(_) => todo!(),
             Token::Function => todo!(),
+            Token::Return => todo!(),
             Token::Let => todo!(),
             Token::Const => todo!(),
             Token::Guard => todo!(),
             Token::If => todo!(),
+            // TODO: true/false?
             Token::LCurly => {
                 let ExToken {
                     token: Token::LCurly,
@@ -133,6 +155,11 @@ fn p_block(data: &mut ParseData) -> ParseResult {
     }
 
     Ok(Ast::Block(ast))
+}
+
+// TODO: Should either eval a statement or make a p_block.
+fn p_block_opt(data: &mut ParseData) -> ParseResult {
+    todo!()
 }
 
 fn p_template(mut tmpl: String) -> anyhow::Result<(String, IdentFill)> {
@@ -197,7 +224,12 @@ fn p_template(mut tmpl: String) -> anyhow::Result<(String, IdentFill)> {
 
 #[cfg(test)]
 mod test {
-    use crate::parser::p_template;
+    use crate::{
+        config::Config,
+        lexer::lex,
+        parser::{p_template, parse},
+    };
+    use std::fs;
 
     #[test]
     fn templates() {
@@ -211,5 +243,14 @@ mod test {
             p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string()).unwrap();
         let _ =
             p_template("This strin {{   aaa     }} {{abc}} {{cc.cc.cc}}{{a}}".to_string()).unwrap();
+    }
+
+    #[test]
+    fn parse_kotfile3() {
+        let file = fs::read_to_string("./test/kotfile3").unwrap();
+        let (tokens, conf_strings) = lex(file.as_str());
+        let config = Config::from_config_slice(&conf_strings).unwrap();
+
+        parse(tokens, &config).unwrap();
     }
 }

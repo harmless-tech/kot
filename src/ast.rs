@@ -11,22 +11,28 @@ pub enum Ast {
     Block(Vec<Ast>),
     /// Ast
     Scope(Box<Ast>),
-    /// Ident or Command
-    RunCommand(Box<Ast>),
-    /// Ident or Command
+    /// Ident and Return
+    Assign(Ident, Box<Ast>),
+
+    /// Ident, String, or Command
+    // RunCommand(Box<Ast>),
+    /// Ident, String, or Command
     SpawnCommand(Box<Ast>),
+
     /// Ident or Integer
     Exit(Box<Ast>),
     /// Ident or String
     Panic(Box<Ast>),
+
     /// Triplets and Ast
-    Triplets(Vec<Ident>, Box<Ast>),
+    Triplets(Vec<String>, Box<Ast>),
     /// Arches and Ast
-    Arches(Vec<Ident>, Box<Ast>),
+    Arches(Vec<String>, Box<Ast>),
     /// OSes and Ast
-    OSes(Vec<Ident>, Box<Ast>),
+    OSes(Vec<String>, Box<Ast>),
     /// Families and Ast
-    Families(Vec<Ident>, Box<Ast>),
+    Families(Vec<String>, Box<Ast>),
+
     // BinOp(OP, AST, AST)
     // If(Box<Ast>, Box<Ast>, Option<Box<Ast>>),
     // IfLet(Ident, Box<Ast>, Box<Ast>, Option<Box<Ast>>),
@@ -36,8 +42,8 @@ pub enum Ast {
 
 #[derive(Debug)]
 pub enum AstType {
-    Ident(String),
-    String(String, IdentFill), // TODO: Allow templating!
+    Ident(Ident),
+    String(String, IdentFill),
     Command(String, IdentFill),
     Integer(Int),
     // Boolean(bool),

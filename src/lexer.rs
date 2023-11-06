@@ -1,7 +1,7 @@
 use crate::Pos;
 use std::fmt::{write, Display, Formatter};
 
-// TODO: Match kotfile3
+// TODO: Match kotfile3. (Check TOKENS)
 
 #[derive(Debug)]
 pub struct ExToken {
