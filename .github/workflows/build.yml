@@ -43,6 +43,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
       - name: Run tests
         if: ${{ matrix.can-test }}
         run: |
@@ -95,6 +97,8 @@ jobs:
         with:
           pkgs: cross
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
       - name: Run tests
         if: ${{ matrix.can-test }}
         run: cross test --verbose --workspace --locked --target ${{ matrix.target }} ${{ env.feature-set }}
@@ -128,6 +132,8 @@ jobs:
         with:
           pkgs: cargo-auditable
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
       - name: Run tests
         if: ${{ matrix.can-test }}
         run: cargo test --verbose --workspace --locked --target ${{ matrix.target }} ${{ env.feature-set }}
@@ -161,6 +167,8 @@ jobs:
         with:
           pkgs: cargo-auditable
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
       - name: Run tests
         if: ${{ matrix.can-test }}
         run: cargo test --verbose --workspace --locked --target ${{ matrix.target }} ${{ env.feature-set }}

@@ -89,6 +89,8 @@ jobs:
           rustup update
           rustc --version
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
       - name: Clippy Check
         shell: bash
         run: |
@@ -130,6 +132,8 @@ jobs:
         with:
           pkgs: cargo-hack
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
       - name: Hack Check (each-feature)
         shell: bash
         run: |
@@ -140,6 +144,35 @@ jobs:
         run: |
           set -o pipefail
           cargo hack check --feature-powerset ${{ env.hack-group }} --no-dev-deps --verbose --workspace 2>&1 | tee .step-data.txt
+      - name: Put into summary (success)
+        if: success()
+        shell: bash
+        run: echo "Success" >> $GITHUB_STEP_SUMMARY
+      - name: Put into summary (failure)
+        if: failure()
+        shell: bash
+        run: |
+          echo "Failed!" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`shell" >> $GITHUB_STEP_SUMMARY
+          cat .step-data.txt >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+  cargo-deny:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update Rust
+        run: |
+          rustup update
+          rustc --version
+      - uses: cargo-prebuilt/cargo-prebuilt-action@v3
+        with:
+          pkgs: cargo-deny
+      - name: Cargo Deny
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo deny check 2>&1 | tee .step-data.txt
       - name: Put into summary (success)
         if: success()
         shell: bash
