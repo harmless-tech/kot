@@ -1,0 +1,95 @@
+// Config
+// Anything that starts with '#' is a special operation.
+#config max_threads, 4
+
+// Args parsed in blocks.
+// kot (ARGS) test (ARGS) TWO (ARGS)
+let reg = regex "\d"
+
+// TODO: Have? Maybe v2?
+// enum ExOptional {}
+
+let a = ["", 123, ""] // Array. not all items have to be the same
+let b = { "string": a, 123: 345 } // Hashmap/Dict
+
+// TODO: Functions calls have optional parens?
+// let a = KOT.STD
+
+// KOT is injected into the global scope.
+const std = KOT.STD // Modules are objects... Everything is object.
+// const bindings cannot be overridden like let bindings.
+// let std = std will not work.
+
+const IMPORT = #import "./file.kot"
+const EXTERN = #extern // TODO
+
+let fs = std.fs;
+let fs = std.NONE
+
+// Three string types.
+let s = "Normal"
+let s = `New Line \ // New Line
+         New Line`  // New Line
+let s = r#"New Line   // New Line
+          New Line"# //           New Line
+let s = "Normal Sub {{ s }}" // {{}} only allows one ident inside.
+
+// Conditional compilation
+#triplet "" {}
+#os "" {}
+#family "unix" {}
+let a = #arch "aarch64" {} // Optional<RETURN>
+
+// Every let binding is ran on a different thread
+// Use --kot=max_threads:4 or #config max_threads, 4
+let para = parallel {
+    let a = {}
+    let b = {}
+    let c = {}
+    return a, b // Only pass back a and b
+}
+
+let obj = object {
+    let three = 3
+    let getter = "getter"
+    return three // Only pass back three
+}
+
+// Math is processed left to right, use ()
+let a = 1 * 2 + 3 * 4 // = 20
+let a = (1 * 2) + (3 * 4) // = 14
+
+let func = fn a, b, c {
+    let total = a + b + c
+    return total // Return only accepts idents
+    // If there is only one item to return,
+    // then it will not be wrapped in an object
+}
+
+let total = func 1, 2, 3 // func(1, 2, 3)
+
+let func_obj = fn {
+    let a = 123
+    let b = 123
+    return a, b
+}
+
+let (a, b) = func_obj // Can unwrap objects.
+
+let out = 345
+let func_out = fn {
+    return out
+}
+let out = 567
+
+let o = func_out // = 345
+
+let option = ? // Same as below
+let option = std.NONE
+
+if let o = option {} // Does not run
+guard let o = option { // Ends here
+    std.fatal "Optional was NONE"
+}
+
+let a = unwrap option // Force unwrap an optional
