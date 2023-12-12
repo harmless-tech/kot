@@ -1,7 +1,7 @@
-.fleet
-.idea
-.vscode
-.vs
+/.fleet
+/.idea
+/.vscode
+/.vs
 
 .DS_Store
 *.tmp

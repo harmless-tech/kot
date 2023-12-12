@@ -35,6 +35,12 @@ docker-alpine:
     rust:alpine \
     sh
 
+doco:
+    cargo doc --open --document-private-items
+
+doc:
+    cargo doc --document-private-items
+
 hack:
     docker run -t --rm --pull=always \
     -e CARGO_TARGET_DIR=/ptarget \

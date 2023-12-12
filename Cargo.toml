@@ -3,15 +3,16 @@ name = "kot"
 version = "0.1.0-dev"
 edition = "2021"
 authors = ["harmless-tech"]
-description = "A command runner"
+description = "A scripting language"
 readme = "README.md"
 license = "MIT"
 repository = "https://github.com/harmless-tech/kot"
-categories = ["command-line-utilities", "development-tools"]
-keywords = ["command-line", "task", "runner", "development", "utility"]
+categories = []
+keywords = ["scripting", "scripting-language"]
 rust-version = "1.70"
 include = [
     "src/",
+    "build.rs",
     "Cargo.lock",
     "Cargo.toml",
     "LICENSE",
@@ -26,34 +27,30 @@ path = "src/bin/main.rs"
 path = "src/lib.rs"
 
 [dependencies]
-aho-corasick = "1.1.2"
+#aho-corasick = "1.1.2"
 anyhow = "1.0.75"
-bitflags = { version = "2.4.1", features = ["std"] }
-num_cpus = "1.16.0"
-rustc-hash = "1.1.0"
+#bitflags = { version = "2.4.1", features = ["std"] }
+#indexmap = "2.1.0"
+#num_cpus = "1.16.0"
+#rustc-hash = "1.1.0"
 
 [features]
-default = ["i64"]
-# Use i64 as int type.
-i64 = []
-# Allow args and other things to be processed on a separate thread. (Max: 4)
-# TODO: This seems to be slow so maybe get rid of it. Or use an async runtime.
-threads = []
+default = ["64-bit-types"]
+# Use 64 bit number types, otherwise 32 bit
+64-bit-types = []
+# Build docs.
+__docs = []
 
-# TODO: Add benchmarking
-#[dev-dependencies]
-#criterion = "0.5.1"
-#
-#[[bench]]
-#name = "kot_tmp"
-#harness = false
-#required-features = []
+[package.metadata.docs.rs]
+features = ["__docs"]
+rustdoc-args = ["--document-private-items"]
 
 [profile.release]
 opt-level = 3
 lto = true
 codegen-units = 1
 strip = true
+panic = "abort"
 
 [profile.small]
 inherits = "release"

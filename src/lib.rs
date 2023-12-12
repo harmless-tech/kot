@@ -1,30 +1,38 @@
 #![allow(dead_code)] // TODO: Remove!!!
 
-#[cfg(feature = "i64")]
-type Int = i64;
-#[cfg(not(feature = "i64"))]
-type Int = i32;
-
-/// (Line, Column)
-type Pos = (usize, usize);
-
-pub mod args;
-pub mod ast;
-pub mod config;
-pub mod interpreter;
-pub mod lexer;
-pub mod parser;
+pub mod entry_args;
 pub mod platform;
+pub mod lexer;
 
-#[cfg(test)]
-mod test {
-    use crate::lexer;
+// TODO: Struct that is generated at compile time that holds feature info.
 
-    #[test]
-    fn repo_kotfile() {
-        let raw_kotfile = std::fs::read_to_string("./kotfile").unwrap();
-        let (_tokens, _f_args) = lexer::lex(&raw_kotfile);
+/// 64 bit types
+#[cfg(feature = "64-bit-types")]
+pub type TypeInt = i64;
+/// 64 bit types
+#[cfg(feature = "64-bit-types")]
+pub type TypeUInt = u64;
+/// 64 bit types
+#[cfg(feature = "64-bit-types")]
+pub type TypeFloat = f64;
 
-        // TODO: Test with cargo-test-repo-kotfile cmd.
-    }
+/// 32 bit types
+#[cfg(not(feature = "64-bit-types"))]
+pub type TypeInt = i32;
+/// 32 bit types
+#[cfg(not(feature = "64-bit-types"))]
+pub type TypeUInt = u32;
+/// 32 bit types
+#[cfg(not(feature = "64-bit-types"))]
+pub type TypeFloat = f32;
+
+// TODO: Move somewhere better?
+#[derive(Debug)]
+pub struct Pos {
+    pub line: usize,
+    pub col: usize,
+}
+
+fn test() {
+    let bool = "";
 }

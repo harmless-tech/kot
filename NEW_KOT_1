@@ -2,8 +2,19 @@
 // Anything that starts with '#' is a special operation.
 #config max_threads, 4
 
-// Args parsed in blocks.
-// kot (ARGS) test (ARGS) TWO (ARGS)
+//Args
+let arg12 = {
+
+}
+
+let args = args {
+    let a = {
+        let subcommand = "test"
+
+    }
+}
+
+// Regex
 let reg = regex "\d"
 
 // TODO: Have? Maybe v2?
@@ -13,7 +24,7 @@ let a = ["", 123, ""] // Array. not all items have to be the same
 let b = { "string": a, 123: 345 } // Hashmap/Dict
 
 // TODO: Functions calls have optional parens?
-// let a = KOT.STD
+// let a = KOT.STD or let a = kot.std
 
 // KOT is injected into the global scope.
 const std = KOT.STD // Modules are objects... Everything is object.
@@ -49,7 +60,7 @@ let para = parallel {
     return a, b // Only pass back a and b
 }
 
-let obj = object {
+let obj = {
     let three = 3
     let getter = "getter"
     return three // Only pass back three

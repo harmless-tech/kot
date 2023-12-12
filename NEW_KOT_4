@@ -1,0 +1,122 @@
+#require feature 64-bit-types
+#config max_threads 4
+
+#use prelude // Injects prelude functions into global scope
+// - print, println
+// - len (array, set, map)
+// - cast <type> (any) -> type
+// - try_cast <type> (any) -> type?
+// - use (string)
+// - regex (string, any) (TODO: Also imports special regex struct?)
+// - is_type (any, type)
+// - panic (any)
+// - exit (any)
+
+// Can limit imported stuff from prelude
+#use prelude.println
+
+// Or bind prelude
+const prelude = #use prelude
+prelude.println "two!"
+
+// Import internal module
+const std = #use std
+
+// Import external module
+const extern = use "./file.kot"
+
+const Struct = struct<T> where T: int + uint + float {
+    a1: int, // Optional commas
+    b1: uint,
+    a3: T,
+}
+let ss = Struct<int> { a1: 8, b1: 8, a3: 8 } // Requires commas within struct block
+
+const Enum = enum<T> where T: string + int {
+    ABC, // Optional commas
+    Type(int, int),
+    Complex { a: int b: int c: T }
+}
+let e = Enum.Type(1, 2)
+
+const Struct2 = struct<T> {} // T == any
+
+const TType = type (string, string, string)
+const arr: [string] = ["", "", ""]
+let (0: a, 1: b, 2: c): TType = arr // Destructure arrays
+
+const tuple: (int, int) = (-1, 1)
+let (a, b) = tuple
+
+let hashmap: map<string, int> = {}
+let hashmap = map<string, int>
+let ("a": a, "b": b) = hashmap
+
+let hashset = set<int>
+// TODO: Does set remeber order? If so then it can be destructured like an array.
+
+var any_arr: [any] = []
+any_arr += "item"
+
+let a = "this is string"
+let reg = regex r"string", a
+
+let str = "123"
+let num = try_cast <int> str
+let num = try_cast<int> str
+
+// Compile time
+let a = #{ return `{ return 11 }` } // Whatever is returned is parsed and compiled.
+
+// Conditional compilation
+#triplet "" {}
+#os "" {}
+#family "unix" {}
+let a = #arch "aarch64" {} // Optional<RETURN>
+
+let optional = ?
+let opt: string? = ?
+let oo = unwrap opt // Fails
+if let op = optional && let o = opt {}
+guard let op = optional {}
+
+let i = if 1 == 2 { return "yes" } else { return "no" }
+let g = guard 1 == 2 { return "no" } else { return "yes" }
+
+// Math is processed left to right, use ()
+let a = 1 * 2 + 3 * 4 // = 20
+let a = (1 * 2) + (3 * 4) // = 14
+
+// Ops
+// ! && ||
+// * / + - %
+// ~ & | << >>
+
+for i: range<int> in 0..<1 {}
+for i: range<uint> in 0..=1 {}
+for i: string in arr {}
+
+let func: fn(int, int, string) -> string = fn a: int, b: int, c: string? -> string {
+    return "{{ a }} {{ b }} {{ c }}"
+}
+
+let gen: fn<T> = fn<X, Y> x: X, y: Y -> (X, Y)
+                 where X: int + string?,
+                       Y: float + int {
+    return (x, y)
+}
+
+const module: mod = mod {
+    pub const INT = 123
+}
+
+var i = 0 // Can be modified
+while i < 100 {
+    i += 1
+}
+
+let chara: char = 'a'
+
+let th = std.threads.spawn fn -> string { return "string from thread" }
+
+// TODO: Big number type?

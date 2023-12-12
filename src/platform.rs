@@ -4,6 +4,9 @@ pub static OSES: &[&str] = &["windows", "macos", "linux", "freebsd"];
 
 pub static OS_FAMILIES: &[&str] = &["windows", "unix"];
 
+// TODO: Add triplets?
+pub static TRIPLETS: &[&str] = &[];
+
 pub mod current {
     pub static TRIPLET: &str = env!("TARGET");
 

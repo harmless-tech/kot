@@ -1,0 +1,146 @@
+const std = use std // Use interal module std
+unwrap std.prelude
+// std.prelude
+// - print, println
+// - len
+// - regex
+// - cast
+
+unwrap std.logging
+// std.logging
+// - info, warn, fatal, dbg, trace
+
+const ext = import "./file.kot" // Import an external module
+
+let a = ["", 123, ""] // Array. not all items have to be the same
+let b = { "string": a, 123: 345 } // Hashmap/Dict
+let ai = a[1] // == 123
+let bi = b["string"] // == ["", 123, ""]
+
+let func = fn a, b, c = "default" {
+    return "{{ a }} {{ b }} {{ c }}"
+}
+let func = fn a, b, c {
+    return "{{ a }} {{ b }} {{ c }}"
+}
+
+let val = func "a", "b", "c"
+
+let obj1 = object {
+    a: 23,
+    b: 100,
+    a150: 150
+}
+let obj2 = object {
+    a: 23,
+    b: 100,
+    a150: 150,
+}
+// obj1 == obj2
+
+// TODO: Variadic args? (v2?)
+// let sfunc = fn a... {} // a... == let a = []
+
+let obj = object { a: 23, b: 25 }
+unwrap obj // a and b are now in the global scope of this file.
+
+print "No newline"
+println "This is a print statement!"
+warn "Oh no!"
+fatal "End!"
+dbg a, "end!!!"
+trace "TODO: Have trace?"
+
+const println = kot.std.println
+println "Hello", "World"
+
+// Conditional compilation
+#triplet "" {}
+#os "" {}
+#family "unix" {}
+let a = #arch "aarch64" {} // Optional<RETURN>
+
+// Every binding is ran on a different thread
+// Use --kot=max_threads:4 or #config max_threads, 4
+let para = parallel {
+    a: {},
+    b: {},
+    c: {},
+    _: {},
+    _: {},
+    _: {},
+    _: {},
+}
+
+// Math is processed left to right, use ()
+let a = 1 * 2 + 3 * 4 // = 20
+let a = (1 * 2) + (3 * 4) // = 14
+
+// Ops
+// ! && ||
+// * / + - %
+// ~ & | << >>
+
+let str1 = "100"
+let str2 = 200
+let str = "{{str1}}{{str2}}"
+
+let optional = #none
+let un = unwrap optional // Fails since optional is ? (none)
+if let op = optional {}
+guard let op = optional {}
+
+if 1 == 2 {}
+else if 3 == 4 {}
+else {}
+
+let i = if 1 == 2 { "yes" } else { no }
+let g = guard 1 == 2 { "no" } else { "yes" }
+
+let (a, b) = object { a: 100, b: 101 }
+let (a: p1, b: p2) = object { a: 100, b: 101 }
+
+let arr = ["1", "2", "3"]
+let (a, b, c) = arr
+let (0: a, 1: b, 2: c) = arr
+
+// Dicts do not preserve order
+let di = dict { "string": 123, 123: "string" }
+let ("string": a, 123: b) = di
+
+let se = set "1", "2", "1"
+let (0: a, 1: b) = se
+
+let arr_length = std.len(arr)
+let dict_length = std.len(di)
+let set_length = std.len(se)
+
+if let (a, b, c) = arr {}
+
+for i in 0..<1 {}
+for i in 0..=1 {}
+
+var i = 0 // Can be modified
+while i < 100 {
+    i += 1
+}
+
+let char = 'a'
+
+let run = fn shell = "sh -c", cmd = "echo" {
+    return void // Return nothing
+}
+run cmd = "echo 'hello'" // shell = "sh -c", cmd = "echo 'hello'"
+run "bash -c", "echo 'hello'" // shell = "bash -c", cmd = "echo 'hello'"
+run cmd = "echo 'hello'", "bash -c" // shell = "bash -c", cmd = "echo 'hello'"
+run shell = "bash -c" // shell = "bash -c", cmd = "echo 'hello'"
+
+let a = object { a: 100 }.a
+
+let reg = regex "\d" // regex is a function defined somewhere under kot
+
+let module = mod {
+    pub const val = 32
+}
+
+let val = module.val
