@@ -1,12 +1,25 @@
+// A '#' means a special statement that can ignore semantics,
+// run before runtime (or condiationally during it),
+// or setup a special type that cannot be defined.
 #require
 #config
 #use
 
-#{}
 #triplet
 #os
 #family
 #arch
+
+#comptime
+#testtime
+
+#bytes
+#map
+#set
+#regex
+
+0x // hex
+0b // binary
 
 const
 let
@@ -20,14 +33,15 @@ false
 // No Special Case
 bool
 int
-uint
+-uint
 float
 char
 string
 any
-void
+-void = ()
 
-range // only int and uint
+range
+regex
 
 map
 set
@@ -35,6 +49,8 @@ set
 
 enum
 struct
+trait
+impl
 where
 
 if
@@ -46,5 +62,6 @@ while
 
 fn
 return
+ret // TODO: For non function blocks?
 mod
 pub

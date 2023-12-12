@@ -1,6 +1,4 @@
-pub struct EntryArgs {
-    
-}
+pub struct EntryArgs {}
 
 // TODO: Args = kot (kot args), subcommand (subcommand args)
 // -i (Nothing after)

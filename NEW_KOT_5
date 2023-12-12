@@ -1,0 +1,95 @@
+// TODO: How strict to get with types?
+// TODO: v2 - structs, enums, strict type arrays-sets-maps
+
+#require feature 64-bit-types
+#config max_threads 4
+#use prelude
+// - print, println
+// - len (array set map string)
+// - cast <type> (any) -> type
+// - try_cast <type> (any) -> type?
+// - is_type (any, type)
+// - type_of (any)
+// - panic (any)
+// - exit (any)
+
+const std = #use std
+const extern = #use "./file.kot"
+
+let arr = [123, "123", 123.0]
+let (0: a, 1: b, 2: c) = arr
+print(type_of(arr)) // == (int, string, float)
+
+let arr = [123, 123, 123]
+print(type_of(arr)) // == [int]
+
+let map = #map { "field": "val", "f2": "val" }
+print(type_of(map)) // == map<string, any> (maps are always this type)
+
+let set = #set ["item", 0x1223]
+print(type_of(set)) // == set<any> (sets are always this type)
+
+// Conditional compilation
+#triplet "" {}
+#os "" {}
+#family "unix" {}
+let a = #arch "aarch64" {} // Optional<RETURN>
+
+let a = 123
+
+switch a { // 1
+    "123" => print(0),
+    123 => print(1),
+    ? => print(2),
+    _ => print(3),
+}
+
+const types = #use types
+let str = "123"
+let val = try_cast(types::int, 123)
+
+let comp = #comptime {} // Runs at compile time
+#testtime {} // Runs if kot --test
+
+let opt = ?
+let unwrap = try opt // Panic if ?
+let unwrap = try opt else "STRING"
+
+let regex = #regex r"\d" // Can only operate on strings.
+let matches = regex("123").matches // TODO: ???
+
+let module = mod {
+    pub const func = fn a, b = "string", c {
+        try return a // If a is ?, then return
+        try return b
+        try return c
+        return "{{a}} {{b}} {{c}}" // Because of syntax an explict return is required
+    }
+    
+    const f = fn {
+        // No return
+        return ()
+    }
+}
+
+let t = fn {
+    let a = { ret "123" } // Returns to a
+    let b = { return "123" } // Returns from function
+    let c = { ret "123" } // Never runs
+}
+
+let _ = func("a", "c")
+let _ = func(a: "a", b: "b", c: "c")
+let _ = func(a: "a")
+let _ = func("a")
+
+let a = "string"
+
+let bytes = #bytes fill 255 128 // 128 u8s with value 255
+let bytes = #bytes from a
+let bytes = #bytes from (128 + 512)
+
+let hex = 0x12A
+let hex = 0x12a
+let binary 0b1010
+let binary 0b001010
