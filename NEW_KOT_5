@@ -1,7 +1,7 @@
 // TODO: How strict to get with types?
 // TODO: v2 - structs, enums, strict type arrays-sets-maps
 
-#require feature 64-bit-types
+#config require_64_bit_types true
 #config max_threads 4
 #use prelude
 // - print, println
@@ -12,6 +12,10 @@
 // - type_of (any)
 // - panic (any)
 // - exit (any)
+
+/*
+ * Multi Line Comment! 
+ */
 
 const std = #use std
 const extern = #use "./file.kot"

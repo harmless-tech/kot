@@ -1,3 +1,4 @@
+#![deny(unsafe_code)]
 #![allow(dead_code)] // TODO: Remove!!!
 
 pub mod entry_args;
@@ -6,6 +7,7 @@ pub mod platform;
 
 // TODO: Struct that is generated at compile time that holds feature info.
 
+// TODO: Move?
 /// 64 bit types
 #[cfg(feature = "64-bit-types")]
 pub type TypeInt = i64;
@@ -31,8 +33,4 @@ pub type TypeFloat = f32;
 pub struct Pos {
     pub line: usize,
     pub col: usize,
-}
-
-fn test() {
-    let bool = "";
 }
