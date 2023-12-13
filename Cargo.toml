@@ -35,9 +35,10 @@ anyhow = "1.0.75"
 #rustc-hash = "1.1.0"
 
 [features]
-default = ["64-bit-types"]
-# Use 64 bit number types, otherwise 32 bit
-64-bit-types = []
+default = []
+# Use 32-bit number types, otherwise 64-bit
+# TODO: Remove? Is this feature going to cause a lot of problems later?
+32-bit-types = []
 # Build docs.
 __docs = []
 
