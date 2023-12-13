@@ -42,10 +42,10 @@ pub enum Token {
     /// \`back string\`, <br>
     /// \`back \ <br>
     /// string\` == "back string"
-    #[deprecated(note="Use `String` instead")]
+    #[deprecated(note = "Use `String` instead")]
     BackString(String),
     /// r"", r#" " "#
-    #[deprecated(note="Use `String` instead")]
+    #[deprecated(note = "Use `String` instead")]
     RawString(String),
     EOF,
 
@@ -115,6 +115,8 @@ pub enum Token {
     For,
     /// in
     In,
+    /// break
+    Break,
 
     /// mod
     Module,
@@ -373,7 +375,7 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             ('+', _) => token1!(Add),
             // - -=
             ('-', '=') => token2!(SubtractAssign),
-            ('-', next) if !('0'..='9').contains(&next) => token1!(Subtract),
+            ('-', next) if !next.is_ascii_digit() => token1!(Subtract),
             // % %=
             ('%', '=') => token2!(ModulusAssign),
             ('%', _) => token1!(Modulus),
@@ -400,7 +402,7 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             ('\'', _) => get_char(lexer, &mut tokens),
             ('"', _) => get_string(lexer, &mut tokens),
             ('`', _) => get_back_string(lexer, &mut tokens),
-            ('r', '#' | '"') => todo!(),
+            ('r', '#' | '"') => get_raw_string(lexer, &mut tokens),
             // Macros
             ('#', 'a'..='z') => todo!(),
             ('#', next) => panic!(
@@ -408,9 +410,7 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
                 lexer.line, lexer.col
             ), // TODO: Return error instead of panic
             // Ident
-            ('.', next)
-                if ('a'..='z').contains(&next) || ('A'..='Z').contains(&next) || next == '_' =>
-            {
+            ('.', next) if next.is_ascii_alphabetic() || next == '_' => {
                 token1!(Dot)
             }
             ('_' | 'a'..='z' | 'A'..='Z', _) => todo!(),
@@ -632,8 +632,75 @@ fn get_back_string(lexer: &mut Lexer, tokens: &mut Tokens) {
         let c = lexer.peek();
         match (c, backslash) {
             (t, true) if !t.is_whitespace() => backslash = false,
-            ('`', _) => { lexer.i(1); break; },
-            ('\0', _) => panic!("Lexer: Hit EOF when getting back string at {line}:{col}. Missing closing '`'."),
+            ('`', _) => {
+                lexer.i(1);
+                break;
+            }
+            ('\n', _) => {
+                builder.push(c);
+                lexer.newline();
+            }
+            ('\0', _) => panic!(
+                "Lexer: Hit EOF when getting back string at {line}:{col}. Missing closing '`'."
+            ),
+            _ => {
+                builder.push(c);
+                lexer.i(1);
+            }
+        }
+    }
+
+    tokens.push(PosToken::new(Token::String(builder), line, col));
+}
+
+// TODO: No panic
+fn get_raw_string(lexer: &mut Lexer, tokens: &mut Tokens) {
+    let (line, col) = (lexer.line, lexer.col);
+    lexer.i(1);
+
+    let mut hash_amount = 0;
+    while lexer.within() && lexer.peek() == '#' {
+        hash_amount += 1;
+        lexer.i(1);
+    }
+    if !lexer.within() {
+        panic!(
+            "Lexer: Raw string hashes go until EOF at {line}:{col}. Try closing the raw string."
+        );
+    }
+
+    let mut builder = String::new();
+    while lexer.within() {
+        let c = lexer.peek();
+        match c {
+            '"' => {
+                let mut backup = String::from(c);
+                lexer.i(1);
+
+                let mut matches = true;
+                for _ in 0..hash_amount {
+                    let c = lexer.peek();
+                    if c == '#' {
+                        backup.push(c);
+                        lexer.i(1);
+                    } else {
+                        matches = false;
+                        break;
+                    }
+                }
+
+                if matches {
+                    if lexer.peek() == '#' {
+                        panic!("Lexer: Raw string at {line}:{col} contains a '\"'['#'] that is wider then its own at {}:{}.", lexer.line, lexer.col);
+                    }
+                    break;
+                }
+                else {
+                    builder.push_str(backup.as_str());
+                }
+            }
+            '\n' => { builder.push(c); lexer.newline(); },
+            '\0' => panic!("Lexer: Hit EOF when getting raw string at {line}:{col}. Missing closing '\"'['#']."),
             _ => { builder.push(c); lexer.i(1); },
         }
     }
