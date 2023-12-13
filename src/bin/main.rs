@@ -1,5 +1,12 @@
-fn main() -> anyhow::Result<()> {
-    // TODO
+use kot::lexer;
 
-    Ok(())
+fn main() -> anyhow::Result<()> {
+    let temp_arg = std::env::args().nth(1).unwrap();
+
+    let lexed = {
+        let file = std::fs::read_to_string(temp_arg).unwrap();
+        lexer::lex(&file)
+    };
+
+    todo!()
 }

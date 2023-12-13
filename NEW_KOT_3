@@ -88,7 +88,7 @@ let str1 = "100"
 let str2 = 200
 let str = "{{str1}}{{str2}}"
 
-let optional = #none
+let optional = ?
 let un = unwrap optional // Fails since optional is ? (none)
 if let op = optional {}
 guard let op = optional {}
@@ -140,7 +140,7 @@ run shell = "bash -c" // shell = "bash -c", cmd = "echo 'hello'"
 
 let a = object { a: 100 }.a
 
-let reg = regex "\d" // regex is a function defined somewhere under kot
+let reg = regex "\\d" // regex is a function defined somewhere under kot
 
 let module = mod {
     pub const val = 32

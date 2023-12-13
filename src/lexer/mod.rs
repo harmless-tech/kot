@@ -1,3 +1,6 @@
+#[cfg(test)]
+mod test;
+
 use std::{ops::Range, usize};
 
 use crate::Pos;
@@ -23,7 +26,7 @@ pub enum Token {
     /// .
     Dot,
     /// #IDENT
-    PoundIdent(MacroToken),
+    Macro(MacroToken),
     /// 213, -123, 123.0, -123.0, 123_000_000.00_00
     Number(String),
     /// 0x123abc, 0x123ABC
@@ -31,7 +34,7 @@ pub enum Token {
     /// 0b1101, 0b10101000
     NumberBinary(String),
     /// '\n', 'c'
-    Charater(char),
+    Character(char),
     /// "", "string" <br>
     /// \`back string\`, <br>
     /// \`back \ <br>
@@ -86,6 +89,8 @@ pub enum Token {
     Enum,
     /// struct Reserved!
     Struct,
+    /// rec
+    Recursive,
     /// fn
     Function,
     /// return
@@ -228,6 +233,7 @@ pub enum MacroToken {
     /// #bytes fill BYTE AMOUNT <br>
     /// #bytes from IDENT <br>
     /// #bytes from (VALUE)
+    /// #bytes file "PATH"
     Bytes,
     /// #map, #map {}, #map { "STRING": VAL, "": VAL }
     Map,
@@ -235,6 +241,27 @@ pub enum MacroToken {
     Set,
     /// #regex IDENT/STRING
     Regex,
+}
+impl TryFrom<&str> for MacroToken {
+    type Error = ();
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "config" => Ok(MacroToken::Config),
+            "use" => Ok(MacroToken::Use),
+            "triplet" => Ok(MacroToken::Triplet),
+            "os" => Ok(MacroToken::OS),
+            "family" => Ok(MacroToken::Family),
+            "arch" => Ok(MacroToken::Arch),
+            "comptime" => Ok(MacroToken::CompTime),
+            "testtime" => Ok(MacroToken::TestTime),
+            "bytes" => Ok(MacroToken::Bytes),
+            "map" => Ok(MacroToken::Map),
+            "set" => Ok(MacroToken::Set),
+            "regex" => Ok(MacroToken::Regex),
+            _ => Err(()),
+        }
+    }
 }
 
 type Tokens = Vec<PosToken>;
@@ -404,21 +431,63 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             ('`', _) => get_back_string(lexer, &mut tokens),
             ('r', '#' | '"') => get_raw_string(lexer, &mut tokens),
             // Macros
-            ('#', 'a'..='z') => todo!(),
+            ('#', 'a'..='z') => {
+                let (line, col) = (lexer.line, lexer.col);
+                lexer.i(1);
+                match MacroToken::try_from(get_ident(lexer).as_str()) {
+                    Ok(t) => tokens.push(PosToken::new(Token::Macro(t), line, col)),
+                    Err(_) => panic!("Lexer: Unknown macro at {line}:{col}."),
+                }
+            }
             ('#', next) => panic!(
                 "Lexer: Unexpected token '{next}' after macro tag at {}:{}.",
                 lexer.line, lexer.col
             ), // TODO: Return error instead of panic
-            // Ident
+            // Ident Split
             ('.', next) if next.is_ascii_alphabetic() || next == '_' => {
                 token1!(Dot)
             }
-            ('_' | 'a'..='z' | 'A'..='Z', _) => todo!(),
+            // Ident and Keywords
+            ('_' | 'a'..='z' | 'A'..='Z', _) => {
+                let (line, col) = (lexer.line, lexer.col);
+                let ident = get_ident(lexer);
+                match ident.as_str() {
+                    "const" => tokens.push(PosToken::new(Token::Const, line, col)),
+                    "let" => tokens.push(PosToken::new(Token::Let, line, col)),
+                    "var" => tokens.push(PosToken::new(Token::Var, line, col)),
+                    "true" => tokens.push(PosToken::new(Token::True, line, col)),
+                    "false" => tokens.push(PosToken::new(Token::False, line, col)),
+                    "enum" => tokens.push(PosToken::new(Token::Enum, line, col)),
+                    "struct" => tokens.push(PosToken::new(Token::Struct, line, col)),
+                    "rec" => tokens.push(PosToken::new(Token::Recursive, line, col)),
+                    "fn" => tokens.push(PosToken::new(Token::Function, line, col)),
+                    "return" => tokens.push(PosToken::new(Token::Return, line, col)),
+                    "ret" => tokens.push(PosToken::new(Token::ScopeReturn, line, col)),
+                    "trait" => tokens.push(PosToken::new(Token::Trait, line, col)),
+                    "impl" => tokens.push(PosToken::new(Token::Implement, line, col)),
+                    "where" => tokens.push(PosToken::new(Token::Where, line, col)),
+                    "try" => tokens.push(PosToken::new(Token::Try, line, col)),
+                    "if" => tokens.push(PosToken::new(Token::If, line, col)),
+                    "guard" => tokens.push(PosToken::new(Token::Guard, line, col)),
+                    "else" => tokens.push(PosToken::new(Token::Else, line, col)),
+                    "switch" => tokens.push(PosToken::new(Token::Switch, line, col)),
+                    "while" => tokens.push(PosToken::new(Token::While, line, col)),
+                    "for" => tokens.push(PosToken::new(Token::For, line, col)),
+                    "in" => tokens.push(PosToken::new(Token::In, line, col)),
+                    "break" => tokens.push(PosToken::new(Token::Break, line, col)),
+                    "mod" => tokens.push(PosToken::new(Token::Module, line, col)),
+                    "pub" => tokens.push(PosToken::new(Token::Public, line, col)),
+                    s => tokens.push(PosToken::new(Token::Ident(s.to_string()), line, col)),
+                }
+            }
             // Whitespace, No Newline
             (' ' | '\t' | '\r', _) => lexer.i(1),
             // Whitespace, Newline
             ('\n', _) => lexer.newline(),
-            _ => panic!("Lexer: Unexpected token at {}:{}.", lexer.line, lexer.col), // TODO: Return error instead of panic
+            _ => panic!(
+                "Lexer: Unexpected token at {}:{}. ({c1})",
+                lexer.line, lexer.col
+            ), // TODO: Return error instead of panic
         }
     }
 
@@ -461,7 +530,6 @@ fn skip_multi_line_comment(lexer: &mut Lexer) {
 // TODO: No panic
 fn get_hex(lexer: &mut Lexer, tokens: &mut Tokens) {
     let (line, col) = (lexer.line, lexer.col);
-
     let mut builder = String::new();
 
     lexer.i(2);
@@ -495,8 +563,8 @@ fn get_hex(lexer: &mut Lexer, tokens: &mut Tokens) {
 // TODO: No panic
 fn get_binary(lexer: &mut Lexer, tokens: &mut Tokens) {
     let (line, col) = (lexer.line, lexer.col);
-
     let mut builder = String::new();
+
     lexer.i(2);
     while lexer.within() {
         let c = lexer.peek();
@@ -590,9 +658,10 @@ fn get_char(lexer: &mut Lexer, tokens: &mut Tokens) {
             .expect("Lexer: Missing char is impossible.");
     }
 
-    tokens.push(PosToken::new(Token::Charater(c), line, col))
+    tokens.push(PosToken::new(Token::Character(c), line, col))
 }
 
+// TODO: Should string replacement {{  }} get processed in the mod or parser?
 // TODO: No panic
 fn get_string(lexer: &mut Lexer, tokens: &mut Tokens) {
     let (line, col) = (lexer.line, lexer.col);
@@ -669,6 +738,8 @@ fn get_raw_string(lexer: &mut Lexer, tokens: &mut Tokens) {
         );
     }
 
+    lexer.i(1);
+
     let mut builder = String::new();
     while lexer.within() {
         let c = lexer.peek();
@@ -708,91 +779,26 @@ fn get_raw_string(lexer: &mut Lexer, tokens: &mut Tokens) {
     tokens.push(PosToken::new(Token::String(builder), line, col));
 }
 
-// TODO: More Testing
-#[cfg(test)]
-mod test {
-    use crate::lexer::Token;
+// TODO: No panic
+fn get_ident(lexer: &mut Lexer) -> String {
+    let (line, col) = (lexer.line, lexer.col);
+    let mut builder = String::new();
 
-    use super::lex;
-
-    #[test]
-    fn only_single_line_comment() {
-        let tokens = lex(r##"// Single line comment life
-                                                      // // // // Single
-                                                      // Comment!!!       "##)
-        .unwrap();
-        assert_eq!(tokens.len(), 1);
-        assert_eq!(tokens[0].token, Token::EOF);
+    while lexer.within() {
+        let c = lexer.peek();
+        if c.is_alphanumeric() || c == '_' || c == '-' {
+            builder.push(c);
+            lexer.i(1);
+        }
+        else {
+            break;
+        }
     }
 
-    #[test]
-    #[should_panic]
-    fn panic_multi_line_comment() {
-        let _ = lex(r##"/* This comment does not have an ending!!!"##);
+    if builder.is_empty() {
+        // TODO: I do not think this can be triggered. Remove.
+        panic!("Lexer: Ident starting at {line}:{col} is somehow empty.");
     }
 
-    #[test]
-    fn get_hex() {
-        let tokens = lex(r##"0x1aAfFd90398536_24438f___12DDFffff"##).unwrap();
-        assert_eq!(tokens.len(), 2);
-        assert_eq!(
-            tokens[0].token,
-            Token::NumberHex("1aaffd9039853624438f12ddfffff".to_string())
-        );
-    }
-
-    #[test]
-    #[should_panic]
-    fn panic_get_hex_empty() {
-        let _ = lex(r##"0x"##);
-    }
-
-    #[test]
-    #[should_panic]
-    fn panic_get_hex_bad_char() {
-        let _ = lex(r##"0xgg"##);
-    }
-
-    #[test]
-    fn get_binary() {
-        let tokens = lex(r##"0b1010__10000_01_01_011111___11101"##).unwrap();
-        assert_eq!(tokens.len(), 2);
-        assert_eq!(
-            tokens[0].token,
-            Token::NumberBinary("101010000010101111111101".to_string())
-        );
-    }
-
-    #[test]
-    #[should_panic]
-    fn panic_get_binary_empty() {
-        let _ = lex(r##"0b"##);
-    }
-
-    #[test]
-    #[should_panic]
-    fn panic_get_binary_bad_char() {
-        let _ = lex(r##"0baa"##);
-    }
-
-    #[test]
-    fn get_numbers() {
-        let tokens = lex(r##"100 -110 3 1 -1 -0 -12 234__123 1_322 -1_234567689"##).unwrap();
-        assert_eq!(tokens.len(), 11);
-        assert_eq!(tokens[0].token, Token::Number("100".to_string()));
-        assert_eq!(tokens[1].token, Token::Number("-110".to_string()));
-        assert_eq!(tokens[2].token, Token::Number("3".to_string()));
-        assert_eq!(tokens[3].token, Token::Number("1".to_string()));
-        assert_eq!(tokens[4].token, Token::Number("-1".to_string()));
-        assert_eq!(tokens[5].token, Token::Number("-0".to_string()));
-        assert_eq!(tokens[6].token, Token::Number("-12".to_string()));
-        assert_eq!(tokens[7].token, Token::Number("234123".to_string()));
-        assert_eq!(tokens[8].token, Token::Number("1322".to_string()));
-        assert_eq!(tokens[9].token, Token::Number("-1234567689".to_string()));
-    }
-
-    #[test]
-    fn blank() {
-        let _ = lex(r##""##);
-    }
+    builder
 }

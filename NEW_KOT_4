@@ -1,4 +1,4 @@
-#require feature 64-bit-types
+//#require feature 64-bit-types
 #config max_threads 4
 
 #use prelude // Injects prelude functions into global scope
@@ -66,7 +66,7 @@ let num = try_cast <int> str
 let num = try_cast<int> str
 
 // Compile time
-let a = #{ return `{ return 11 }` } // Whatever is returned is parsed and compiled.
+let a = #comptime { return `{ return 11 }` } // Whatever is returned is parsed and compiled.
 
 // Conditional compilation
 #triplet "" {}
