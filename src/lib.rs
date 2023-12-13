@@ -2,9 +2,15 @@
 #![allow(dead_code)] // TODO: Remove!!!
 
 // TODO: Allow lexer, parser, interpreter to be added as a feature independently.
+#[cfg(feature = "arg-parse")]
 pub mod entry_args;
+#[cfg(feature = "lexer")]
 pub mod lexer;
-pub mod platform;
+#[cfg(feature = "parser")]
+pub mod parser;
+mod platform;
+#[cfg(feature = "tokens")]
+pub mod token;
 
 // TODO: Struct that is generated at compile time that holds feature info.
 // TODO: Kot uses COW semantics. (COW)

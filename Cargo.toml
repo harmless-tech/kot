@@ -22,6 +22,7 @@ include = [
 [[bin]]
 name = "kot"
 path = "src/bin/main.rs"
+required-features = ["all"]
 
 [lib]
 path = "src/lib.rs"
@@ -35,15 +36,37 @@ anyhow = "1.0.75"
 #rustc-hash = "1.1.0"
 
 [features]
-default = []
+default = ["all"]
+all = ["arg-parse", "method-all"]
+
 # Use 32-bit number types, otherwise 64-bit
 # TODO: Remove? Is this feature going to cause a lot of problems later?
 32-bit-types = []
+
+# TODO
+arg-parse = []
+
+# TODO
+method-all = ["tokens", "lexer", "ast", "parser", "interpreter", "bytecode", "bytecode-compiler", "vm", "exe"]
+method-interp = ["lexer", "parser", "interpreter"]
+method-vm = ["lexer", "parser", "bytecode-compiler", "vm"]
+method-vm-no-compile = ["vm"]
+method-exe = ["method-all"]
+tokens = []
+lexer = ["tokens"]
+ast = []
+parser = ["tokens", "ast"]
+interpreter = ["ast"]
+bytecode = []
+bytecode-compiler = ["ast", "bytecode"]
+vm = ["bytecode"]
+exe = ["method-all"]
+
 # Build docs.
 __docs = []
 
 [package.metadata.docs.rs]
-features = ["__docs"]
+features = ["all", "__docs"]
 rustdoc-args = ["--document-private-items"]
 
 [profile.release]

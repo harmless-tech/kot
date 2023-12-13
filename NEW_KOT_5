@@ -97,3 +97,10 @@ let hex = 0x12A
 let hex = 0x12a
 let binary 0b1010
 let binary 0b001010
+
+// Imports 'types' that can be used with is_type()
+#use types
+guard char == "char" {}
+guard string == "string" {}
+guard is_type("this is string", string) {}
+guard is_type(string, string) {}

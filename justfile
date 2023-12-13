@@ -12,10 +12,14 @@ runr +ARGS:
 fmt:
     cargo +nightly fmt
 
+lint:
+    cargo clippy --all-targets --locked --workspace -- -D warnings
+
 check:
     cargo +nightly fmt --check
-    cargo clippy --all-targets --locked --workspace -- -D warnings
+    just lint
     cargo clippy --all-targets --locked --workspace --release -- -D warnings
+
 
 docker:
     docker run -it --rm --pull=always \

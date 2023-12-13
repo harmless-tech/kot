@@ -1,6 +1,6 @@
 // TODO: More testing
 
-use crate::lexer::{lex, Token};
+use crate::{lexer::lex, token::Token};
 
 #[test]
 fn only_single_line_comment() {
