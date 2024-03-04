@@ -1,11 +1,9 @@
-.fleet
-.idea
-.vscode
-.vs
-
-.DS_Store
-*.tmp
+.fleet/
+.idea/
+.vscode/
+.vs/
 
 /target
 
-tmp/
+.DS_Store
+*.tmp

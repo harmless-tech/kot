@@ -2,57 +2,48 @@ default:
     just -l
 
 pwd := `pwd`
-
-run +ARGS:
-    cargo run -- {{ARGS}}
-
-runr +ARGS:
-    cargo run --release -- {{ARGS}}
+runner := 'docker'
 
 fmt:
     cargo +nightly fmt
 
-check:
+default_cargo_version := "stable"
+check CARGO=default_cargo_version:
     cargo +nightly fmt --check
-    cargo clippy --all-targets --locked --workspace -- -D warnings
-    cargo clippy --all-targets --locked --workspace --release -- -D warnings
+    cargo +{{CARGO}} clippy --all-targets --locked --workspace -- -D warnings
+    cargo +{{CARGO}} clippy --all-targets --locked --workspace --release -- -D warnings
+    cargo +{{CARGO}} deny check
 
-docker:
-    docker run -it --rm --pull=always \
+default_log_level := 'INFO'
+sup-lint LOG_LEVEL=default_log_level:
+    {{runner}} run -t --rm --pull=always \
+    --platform=linux/amd64 \
+    -e LOG_LEVEL={{LOG_LEVEL}} \
+    -e RUN_LOCAL=true \
+    -e SHELL=/bin/bash \
+    -e DEFAULT_BRANCH=main \
+    -e VALIDATE_ALL_CODEBASE=true \
+    -e VALIDATE_RUST_2015=false \
+    -e VALIDATE_RUST_2018=false \
+    -e VALIDATE_RUST_2021=false \
+    -e VALIDATE_RUST_CLIPPY=false \
+    --mount type=bind,source='{{pwd}}',target=/tmp/lint \
+    ghcr.io/super-linter/super-linter:slim-latest
+
+debian:
+    {{runner}} run -it --rm --pull=always \
     -e CARGO_TARGET_DIR=/ptarget \
-    --mount type=bind,source={{pwd}},target=/project \
-    --mount type=bind,source=$HOME/.cargo/registry,target=/usr/local/cargo/registry \
+    --mount type=bind,source='{{pwd}}',target=/project \
+    --mount type=bind,source="$HOME"/.cargo/registry,target=/usr/local/cargo/registry \
     -w /project \
     rust:latest \
     bash
 
-docker-alpine:
-    docker run -it --rm --pull=always \
+alpine:
+    {{runner}} run -it --rm --pull=always \
     -e CARGO_TARGET_DIR=/ptarget \
-    --mount type=bind,source={{pwd}},target=/project \
-    --mount type=bind,source=$HOME/.cargo/registry,target=/usr/local/cargo/registry \
+    --mount type=bind,source='{{pwd}}',target=/project \
+    --mount type=bind,source="$HOME"/.cargo/registry,target=/usr/local/cargo/registry \
     -w /project \
     rust:alpine \
     sh
-
-hack:
-    docker run -t --rm --pull=always \
-    -e CARGO_TARGET_DIR=/ptarget \
-    --mount type=bind,source={{pwd}},target=/project \
-    --mount type=bind,source=$HOME/.cargo/registry,target=/usr/local/cargo/registry \
-    -w /project \
-    rust:latest \
-    bash -c "curl --proto '=https' --tlsv1.2 -sSf \
-    https://raw.githubusercontent.com/cargo-prebuilt/cargo-prebuilt/main/scripts/install-cargo-prebuilt.sh | bash \
-    && cargo prebuilt cargo-hack --ci \
-    && cargo hack check --each-feature --no-dev-deps --verbose --workspace \
-    && cargo hack check --feature-powerset --no-dev-deps --verbose --workspace"
-
-msrv:
-    docker run -t --rm --pull=always \
-    -e CARGO_TARGET_DIR=/ptarget \
-    --mount type=bind,source={{pwd}},target=/project \
-    --mount type=bind,source=$HOME/.cargo/registry,target=/usr/local/cargo/registry \
-    -w /project \
-    rust:latest \
-    bash -c 'cargo install cargo-msrv --version 0.15.1 --profile=dev && cargo msrv -- cargo check --verbose --locked'
