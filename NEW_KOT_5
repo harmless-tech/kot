@@ -12,6 +12,7 @@
 // - type_of (any)
 // - panic (any)
 // - exit (any)
+// - Include #use types in the prelude?
 
 /*
  * Multi Line Comment! 
@@ -104,3 +105,8 @@ guard char == "char" {}
 guard string == "string" {}
 guard is_type("this is string", string) {}
 guard is_type(string, string) {}
+
+fn { print("Hello!") }()
+
+let b = fn a, b, c, d, {}
+b(1, 2, 3, 4,)

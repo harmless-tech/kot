@@ -1,0 +1,22 @@
+const bool = "bool"
+const int = "int"
+const float = "float"
+const char = "char"
+const string = "string"
+//const any = "any"
+
+const array = "[]"
+const set = "set"
+const map = "map"
+
+const range = "range"
+const regex = "regex"
+
+/// types = [TYPE]
+//const array_over = fn types {
+//    var build = "["
+//}
+
+//const range_over = fn type {
+//    return "range<{{ type }}>"
+//}

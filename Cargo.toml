@@ -29,7 +29,7 @@ path = "src/lib.rs"
 
 [dependencies]
 #aho-corasick = "1.1.2"
-anyhow = "1.0.75"
+anyhow = "1.0.80"
 #bitflags = { version = "2.4.1", features = ["std"] }
 #indexmap = "2.1.0"
 #num_cpus = "1.16.0"
@@ -47,7 +47,7 @@ all = ["arg-parse", "method-all"]
 arg-parse = []
 
 # TODO
-method-all = ["tokens", "lexer", "ast", "parser", "interpreter", "bytecode", "bytecode-compiler", "vm", "exe"]
+method-all = ["tokens", "lexer", "ast", "parser", "interpreter", "bytecode", "bytecode-compiler", "vm"]
 method-interp = ["lexer", "parser", "interpreter"]
 method-vm = ["lexer", "parser", "bytecode-compiler", "vm"]
 method-vm-no-compile = ["vm"]
@@ -60,7 +60,6 @@ interpreter = ["ast"]
 bytecode = []
 bytecode-compiler = ["ast", "bytecode"]
 vm = ["bytecode"]
-exe = ["method-all"]
 
 # Build docs.
 __docs = []

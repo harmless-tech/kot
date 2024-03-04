@@ -1,6 +1,9 @@
-use crate::token::{PosToken, Tokens};
+use crate::{token::{PosToken, Tokens}, ast::Ast};
 use std::ops::Range;
 
+type ParseResult = anyhow::Result<()>;
+
+// TODO: Keep track of vars to make sure they are all defined.
 struct Parser {
     tokens: Tokens,
     index: usize,
@@ -36,6 +39,12 @@ impl Parser {
     }
 }
 
-pub fn parse(tokens: Tokens) -> anyhow::Result<()> {
+pub fn parse(tokens: Tokens) -> anyhow::Result<Ast> {
+    todo!()
+}
+
+fn p_program() {
+    // Match ident() const let var blocks fn try if guard for while mod pub macros
+
     todo!()
 }
