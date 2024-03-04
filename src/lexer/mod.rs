@@ -2,7 +2,7 @@ use crate::{
     data::{PosToken, Token},
     Pos,
 };
-use std::{collections::VecDeque, fmt::Formatter, iter::Fuse, str::Chars};
+use std::{collections::VecDeque, iter::Fuse, str::Chars};
 
 #[derive(Debug)]
 struct Lexer<'a> {
@@ -103,20 +103,24 @@ struct PunchToken {
     tokens: Vec<PosToken>,
 }
 impl PunchToken {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self { tokens: Vec::new() }
     }
 
+    fn add(&mut self, lexer: &mut Lexer, token: Token) {
+        self.add_i(lexer, token, 0);
+    }
+
     fn add1(&mut self, lexer: &mut Lexer, token: Token) {
-        self.add_i(lexer, token, 1)
+        self.add_i(lexer, token, 1);
     }
 
     fn add2(&mut self, lexer: &mut Lexer, token: Token) {
-        self.add_i(lexer, token, 2)
+        self.add_i(lexer, token, 2);
     }
 
     fn add3(&mut self, lexer: &mut Lexer, token: Token) {
-        self.add_i(lexer, token, 3)
+        self.add_i(lexer, token, 3);
     }
 
     fn add_i(&mut self, lexer: &mut Lexer, token: Token, consume: usize) {
@@ -125,16 +129,29 @@ impl PunchToken {
     }
 }
 
-#[derive(Debug)]
-pub enum LexerError {}
+#[derive(Debug, Eq, PartialEq)]
+pub enum LexerError {
+    DecimalBadToken { c: char, pos: Pos },
+    DecimalMoreThanOnePeriod { pos: Pos },
+}
 impl std::fmt::Display for LexerError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        todo!()
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::DecimalBadToken { c, pos } => {
+                write!(f, "Lexer: Could not lex decimal, bad token '{c}' at {pos}.")
+            }
+            Self::DecimalMoreThanOnePeriod { pos } => {
+                write!(
+                    f,
+                    "Lexer: Could not lex decimal, more than one period at {pos}."
+                )
+            }
+        }
     }
 }
 impl std::error::Error for LexerError {}
 
-pub fn lex(contents: &str) -> anyhow::Result<()> {
+pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
     let mut lexer = Lexer::new(contents);
     let lexer = &mut lexer;
     let mut tokens = PunchToken::new();
@@ -150,6 +167,7 @@ pub fn lex(contents: &str) -> anyhow::Result<()> {
             ('/', '/', _) => todo!(), // Single line
             ('/', '*', _) => todo!(), // Multi line
 
+            // TODO: Method Call
             ('(', _, _) => tokens.add1(lexer, Token::LParentheses),
             (')', _, _) => tokens.add1(lexer, Token::RParentheses),
 
@@ -191,13 +209,13 @@ pub fn lex(contents: &str) -> anyhow::Result<()> {
             ('^', _, _) => tokens.add1(lexer, Token::BitXor),
             ('|', _, _) => tokens.add1(lexer, Token::BitOr),
 
-            ('0', 'x', _) => todo!(),     // Hex
-            ('0', 'o', _) => todo!(),     // Octal
-            ('0', 'b', _) => todo!(),     // Binary
-            ('0'..='9', _, _) => todo!(), // Decimal
+            ('0', 'x', _) => todo!(), // Hex
+            ('0', 'o', _) => todo!(), // Octal
+            ('0', 'b', _) => todo!(), // Binary
+            ('0'..='9', _, _) => tokens.tokens.push(get_decimal(lexer)?), // Decimal
 
-            ('\'', _, _) => todo!(),
-            ('"', _, _) | ('#', '"' | '#', _) | ('r', '"' | '#', _) => todo!(),
+            ('\'', _, _) => todo!(),                            // Char
+            ('"', _, _) | ('#' | 'r', '"' | '#', _) => todo!(), // String
 
             // ('', _, _) => tokens.add1(lexer, Token::),
             (' ' | '\t' | '\r' | '\n', _, _) => lexer.skip_i(1),
@@ -214,12 +232,51 @@ pub fn lex(contents: &str) -> anyhow::Result<()> {
         None => tokens.tokens.push(PosToken::eof(lexer.current_pos())),
     }
 
-    todo!()
+    Ok(tokens.tokens)
 }
 
 fn map_opt_char(opt_char: Option<&char>) -> char {
-    match opt_char {
-        Some(c) => *c,
-        None => '\0',
+    opt_char.map_or('\0', |c| *c)
+}
+
+fn get_decimal(lexer: &mut Lexer) -> anyhow::Result<PosToken> {
+    let pos = lexer.current_pos();
+    let mut builder = String::new();
+
+    let mut period = false;
+
+    while lexer.within() {
+        let (c1, c2) = (
+            map_opt_char(lexer.peek().as_ref()),
+            map_opt_char(lexer.peek_i(1).as_ref()),
+        );
+        match (c1, c2) {
+            ('0'..='9', _) => {
+                builder.push(c1);
+                lexer.skip_i(1);
+            }
+            ('.', '0'..='9') => {
+                if period {
+                    return Err(LexerError::DecimalMoreThanOnePeriod {
+                        pos: lexer.current_pos(),
+                    }
+                    .into());
+                }
+
+                period = true;
+                builder.push(c1);
+                lexer.skip_i(1);
+            }
+            ('_', '0'..='9') => {
+                lexer.skip_i(1);
+            } // Skip
+            _ => break,
+        }
     }
+
+    if builder.is_empty() {
+        unreachable!();
+    }
+
+    Ok(PosToken::new(Token::Number(builder, 10), pos))
 }

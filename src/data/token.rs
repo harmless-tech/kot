@@ -1,6 +1,6 @@
 use crate::Pos;
 
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub struct PosToken {
     pub token: Token,
     pub pos: Pos,
@@ -34,8 +34,15 @@ pub enum Token {
     /// #IDENT
     Macro(),
 
-    Number(String),
+    /// Number and radix
+    Number(String, usize),
+    #[deprecated(note = "Use 'Number' with radix.")]
+    NumberDecimal(String),
+    #[deprecated(note = "Use 'Number' with radix.")]
     NumberHex(String),
+    #[deprecated(note = "Use 'Number' with radix.")]
+    NumberOctal(String),
+    #[deprecated(note = "Use 'Number' with radix.")]
     NumberBinary(String),
 
     Character(char),

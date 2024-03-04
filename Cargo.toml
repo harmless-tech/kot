@@ -29,7 +29,8 @@ path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.80"
-mimalloc = "0.1.39"
+const-hex = "1.11.1"
+#mimalloc = "0.1.39"
 
 [features]
 default = []

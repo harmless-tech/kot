@@ -5,8 +5,9 @@ Mostly follows the same rules as
 
 | Operator/Expression                         | Associativity       |
 |---------------------------------------------|---------------------|
+| Method Calls                                |                     |
 | Field expressions                           | left to right       |
-| Calls/Indexing                              |                     |
+| Function Calls/Indexing                     |                     |
 | Unary - ! ~                                 |                     |
 | as                                          | left to right       |
 | * / %                                       | left to right       |
