@@ -1,5 +1,6 @@
 use crate::Pos;
 
+// TODO: String with size limited to u16?
 pub type Ident = String;
 
 type Bst = Box<PosAst>;
@@ -25,7 +26,7 @@ impl std::fmt::Display for PosAst {
 #[derive(Debug)]
 pub enum Ast {
     // TODO: Should use Vst and Maybe should just be a block.
-    FakeGlobalBlock(Bst),
+    Root(Bst),
     Block(Vst),
 
     UnaryOp(UnaryOperation, Bst),
@@ -37,12 +38,12 @@ pub enum Ast {
     #[deprecated]
     AssignmentOp(Ident, AssignmentOperation, Bst),
 
-    Value(WrappedValue),
+    Value(Typing),
 }
 impl std::fmt::Display for Ast {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Self::FakeGlobalBlock(a) => write!(f, "FakeGlobal... {a}"),
+            Self::Root(a) => write!(f, "FakeGlobal... {a}"),
             Self::UnaryOp(op, a) => write!(f, "{op:?} {{ {a} }}"),
             Self::BinOp(op, a1, a2) => write!(f, "{op:?} {{ {a1}, {a2} }}"),
             Self::Value(val) => write!(f, "{val:?}"),
@@ -89,20 +90,24 @@ pub enum BinaryOperation {
 #[deprecated]
 pub enum AssignmentOperation {}
 
-#[derive(Debug)]
-pub enum WrappedValue {
+#[derive(Clone, Debug)]
+pub enum Typing {
     Int64(i64),
     UInt64(u64),
     Float64(f64),
 
     UInt8(u8),
+    Boolean(bool),
 
     Character(char),
     // TODO: Missing Filler (Should be moved to struct?)
     String(Box<ChoppedString>),
+
+    Ident(Ident),
+    // Closure
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct ChoppedString {
     string: String,
     /// [(Ident, Place position)] sorted in reverse order.

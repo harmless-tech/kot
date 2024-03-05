@@ -51,7 +51,7 @@ pub fn parse(tokens: Vec<PosToken>) -> anyhow::Result<PosAst> {
     let mut parser = Parser::new(tokens);
 
     let root = PosAst::new(
-        Ast::FakeGlobalBlock(parse_tree::p_expression(&mut parser)?.into()),
+        Ast::Root(parse_tree::p_expression(&mut parser)?.into()),
         Pos::new(0, 0),
     );
 
@@ -62,8 +62,6 @@ pub fn parse(tokens: Vec<PosToken>) -> anyhow::Result<PosAst> {
         }) => println!("DBG: Found Eof at {pos:?}"),
         _ => panic!("Required EOF token but not found!!!"),
     }
-
-    dbg!(&root);
 
     Ok(root)
 }

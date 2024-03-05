@@ -1,5 +1,5 @@
 use crate::{
-    data::{Ast, BinaryOperation, PosAst, PosToken, Token, WrappedValue},
+    data::{Ast, BinaryOperation, PosAst, PosToken, Token, Typing},
     lexer::lex,
     parser::parse,
     Pos,
@@ -33,7 +33,7 @@ fn kot_1() {
 
     let ast = parse(lex).unwrap();
     if let PosAst {
-        ast: Ast::FakeGlobalBlock(a),
+        ast: Ast::Root(a),
         pos,
     } = ast
     {
@@ -47,7 +47,7 @@ fn kot_1() {
             assert_eq!(pos, Pos::new(1, 3));
 
             if let PosAst {
-                ast: Ast::Value(WrappedValue::Int64(int)),
+                ast: Ast::Value(Typing::Int64(int)),
                 pos,
             } = *a1
             {
@@ -59,7 +59,7 @@ fn kot_1() {
             }
 
             if let PosAst {
-                ast: Ast::Value(WrappedValue::Int64(int)),
+                ast: Ast::Value(Typing::Int64(int)),
                 pos,
             } = *a2
             {

@@ -4,11 +4,16 @@
 //
 
 pub mod data;
-pub mod lexer;
+mod lexer;
 
+mod interpreter;
 mod parser;
 #[cfg(test)]
 mod test;
+
+pub use interpreter::Interpreter;
+pub use lexer::{lex, LexerError};
+pub use parser::parse;
 
 // TODO: Library should be wasm compliant.
 

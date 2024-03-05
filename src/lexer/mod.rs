@@ -146,6 +146,12 @@ impl std::fmt::Display for LexerError {
 }
 impl std::error::Error for LexerError {}
 
+macro_rules! whitespace {
+    () => {
+        ' ' | '\t' | '\r' | '\n'
+    };
+}
+
 pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
     let mut lexer = Lexer::new(contents);
     let lexer = &mut lexer;
@@ -161,10 +167,6 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             // Comments
             ('/', '/', _) => todo!(), // Single line
             ('/', '*', _) => todo!(), // Multi line
-
-            // TODO: Method Call
-            ('(', _, _) => tokens.add1(lexer, Token::LParentheses),
-            (')', _, _) => tokens.add1(lexer, Token::RParentheses),
 
             ('.', '.', '<') => tokens.add3(lexer, Token::RangeExclusive),
             ('.', '.', '=') => tokens.add3(lexer, Token::RangeInclusive),
@@ -204,6 +206,18 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             ('^', _, _) => tokens.add1(lexer, Token::BitXor),
             ('|', _, _) => tokens.add1(lexer, Token::BitOr),
 
+            // TODO: Method Call (.method())
+            ('(', _, _) => tokens.add1(lexer, Token::LParentheses),
+            (')', _, _) => tokens.add1(lexer, Token::RParentheses),
+            ('[', _, _) => tokens.add1(lexer, Token::LBracket),
+            (']', _, _) => tokens.add1(lexer, Token::RBracket),
+            ('{', _, _) => tokens.add1(lexer, Token::LCurly),
+            ('}', _, _) => tokens.add1(lexer, Token::RCurly),
+            (',', _, _) => tokens.add1(lexer, Token::Comma),
+            (':', _, _) => tokens.add1(lexer, Token::Colon),
+            (';', _, _) => tokens.add1(lexer, Token::SemiColon),
+            ('a', 's', whitespace!()) => tokens.add1(lexer, Token::Cast),
+
             ('0', 'x', _) => todo!(), // Hex
             ('0', 'o', _) => todo!(), // Octal
             ('0', 'b', _) => todo!(), // Binary
@@ -213,7 +227,7 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             ('"', _, _) | ('#' | 'r', '"' | '#', _) => todo!(), // String
 
             // ('', _, _) => tokens.add1(lexer, Token::),
-            (' ' | '\t' | '\r' | '\n', _, _) => lexer.skip_i(1),
+            (whitespace!(), _, _) => lexer.skip_i(1),
             _ => todo!(),
         }
     }

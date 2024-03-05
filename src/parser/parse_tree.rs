@@ -5,7 +5,7 @@ use crate::{
 
 // TODO: FIX!!!
 pub(super) fn p_expression(parser: &mut Parser) -> anyhow::Result<PosAst> {
-    p_additive(parser)
+    p_compare(parser)
 }
 
 macro_rules! bin_op {
@@ -30,6 +30,37 @@ macro_rules! unary_op {
             pos,
         ))
     }};
+}
+
+fn p_compare(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_additive(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::CompareEqual,
+            pos,
+        }) => bin_op!(Equal, pos, expr, p_compare, parser),
+        Some(PosToken {
+            token: Token::CompareNotEqual,
+            pos,
+        }) => bin_op!(NotEqual, pos, expr, p_compare, parser),
+        Some(PosToken {
+            token: Token::CompareLess,
+            pos,
+        }) => bin_op!(Less, pos, expr, p_compare, parser),
+        Some(PosToken {
+            token: Token::CompareGreater,
+            pos,
+        }) => bin_op!(Greater, pos, expr, p_compare, parser),
+        Some(PosToken {
+            token: Token::CompareLessEqual,
+            pos,
+        }) => bin_op!(LessEqual, pos, expr, p_compare, parser),
+        Some(PosToken {
+            token: Token::CompareGreaterEqual,
+            pos,
+        }) => bin_op!(GreaterEqual, pos, expr, p_compare, parser),
+        _ => Ok(expr),
+    }
 }
 
 fn p_additive(parser: &mut Parser) -> anyhow::Result<PosAst> {

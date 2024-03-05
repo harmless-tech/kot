@@ -25,3 +25,10 @@ fn test_dec_multi_period() {
         }
     );
 }
+
+#[test]
+fn test_multi() {
+    lex("1 == 1").unwrap();
+    lex("1 != 11").unwrap();
+    lex("1!=1").unwrap();
+}

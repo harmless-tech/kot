@@ -24,8 +24,6 @@ impl PosToken {
 pub enum Token {
     Eof,
 
-    /// ; Reserved!
-    SemiColon,
     /// $ Reserved!
     DollarSign,
 
@@ -46,7 +44,13 @@ pub enum Token {
     NumberBinary(String),
 
     Character(char),
+    // TODO: String, StringType
     String(),
+
+    /// true
+    True,
+    ///  false
+    False,
 
     /// (
     LParentheses,
@@ -64,11 +68,16 @@ pub enum Token {
     Comma,
     /// :
     Colon,
+    /// ;
+    SemiColon,
 
     /// const
     Const,
     /// let
     Let,
+
+    // as
+    Cast,
 
     /// ..<
     RangeExclusive,
