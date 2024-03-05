@@ -11,31 +11,31 @@ pub fn run(ast: &PosAst, interp: &mut Interpreter) -> anyhow::Result<Option<Typi
 #[derive(Debug)]
 pub struct Interpreter {
     pub ast: PosAst,
-    pub envir: Environment,
+    pub env: Environment,
 }
 impl Interpreter {
     pub fn new(ast: PosAst) -> Self {
         Self {
             ast,
-            envir: Environment::new(),
+            env: Environment::new(),
         }
     }
 
     pub fn new_with_environment(ast: PosAst, envir: Environment) -> Self {
-        Self { ast, envir }
+        Self { ast, env: envir }
     }
 
     // TODO: Runs the entire ast.
     pub fn run(&mut self) -> anyhow::Result<Option<Typing>> {
-        Self::run_tree(&self.ast, &mut self.envir)
+        Self::run_tree(&self.ast, &mut self.env)
     }
 
-    fn run_tree(ast: &PosAst, envir: &mut Environment) -> anyhow::Result<Option<Typing>> {
+    fn run_tree(ast: &PosAst, env: &mut Environment) -> anyhow::Result<Option<Typing>> {
         let PosAst { ast, pos } = ast;
         match ast {
-            Ast::Root(ast) => Self::run_tree(ast, envir),
+            Ast::Root(ast) => Self::run_tree(ast, env),
             Ast::UnaryOp(op, ast) => {
-                let expr = Self::run_tree(ast, envir)?;
+                let expr = Self::run_tree(ast, env)?;
                 match (op, expr) {
                     (UnaryOperation::Negate, Some(t)) => match t {
                         Typing::Int64(v) => Ok(Some(Typing::Int64(-v))),
@@ -47,8 +47,8 @@ impl Interpreter {
                 }
             }
             Ast::BinOp(op, a1, a2) => {
-                let expr1 = Self::run_tree(a1, envir)?;
-                let expr2 = Self::run_tree(a2, envir)?;
+                let expr1 = Self::run_tree(a1, env)?;
+                let expr2 = Self::run_tree(a2, env)?;
                 match (op, expr1, expr2) {
                     (BinaryOperation::Add, Some(v1), Some(v2)) => match (v1, v2) {
                         (Typing::Int64(i1), Typing::Int64(i2)) => Ok(Some(Typing::Int64(i1 + i2))),

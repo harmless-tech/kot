@@ -5,8 +5,17 @@ use crate::{
 
 // TODO: FIX!!!
 pub(super) fn p_expression(parser: &mut Parser) -> anyhow::Result<PosAst> {
-    p_compare(parser)
+    p_boolor(parser)
 }
+
+// Template
+// fn p_(parser: &mut Parser) -> anyhow::Result<PosAst> {
+//     let expr = (parser)?;
+//     match parser.peek() {
+//         Some(PosToken { token: Token::, pos}) => crate::bin_op!(, pos, expr, , parser),
+//         _ => Ok(expr),
+//     }
+// }
 
 macro_rules! bin_op {
     ($t:ident, $p:ident, $e:ident, $f:ident, $par:ident) => {{
@@ -32,8 +41,46 @@ macro_rules! unary_op {
     }};
 }
 
+// TODO: Let/Const/Var
+// TODO: Closures
+// TODO: Assignments
+// TODO: Ranges
+
+fn p_boolor(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_boolxor(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::BoolOr,
+            pos,
+        }) => bin_op!(BooleanOr, pos, expr, p_boolor, parser),
+        _ => Ok(expr),
+    }
+}
+
+fn p_boolxor(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_booland(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::BoolXor,
+            pos,
+        }) => bin_op!(BooleanXor, pos, expr, p_boolxor, parser),
+        _ => Ok(expr),
+    }
+}
+
+fn p_booland(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_compare(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::BoolAnd,
+            pos,
+        }) => bin_op!(BooleanAnd, pos, expr, p_booland, parser),
+        _ => Ok(expr),
+    }
+}
+
 fn p_compare(parser: &mut Parser) -> anyhow::Result<PosAst> {
-    let expr = p_additive(parser)?;
+    let expr = p_bitor(parser)?;
     match parser.peek() {
         Some(PosToken {
             token: Token::CompareEqual,
@@ -59,6 +106,54 @@ fn p_compare(parser: &mut Parser) -> anyhow::Result<PosAst> {
             token: Token::CompareGreaterEqual,
             pos,
         }) => bin_op!(GreaterEqual, pos, expr, p_compare, parser),
+        _ => Ok(expr),
+    }
+}
+
+fn p_bitor(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_bitxor(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::BitOr,
+            pos,
+        }) => bin_op!(BitwiseOr, pos, expr, p_bitor, parser),
+        _ => Ok(expr),
+    }
+}
+
+fn p_bitxor(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_bitand(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::BitXor,
+            pos,
+        }) => bin_op!(BitwiseXor, pos, expr, p_bitxor, parser),
+        _ => Ok(expr),
+    }
+}
+
+fn p_bitand(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_bitshift(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::BitAnd,
+            pos,
+        }) => bin_op!(BitwiseAnd, pos, expr, p_bitand, parser),
+        _ => Ok(expr),
+    }
+}
+
+fn p_bitshift(parser: &mut Parser) -> anyhow::Result<PosAst> {
+    let expr = p_additive(parser)?;
+    match parser.peek() {
+        Some(PosToken {
+            token: Token::BitLeft,
+            pos,
+        }) => bin_op!(BitwiseShiftLeft, pos, expr, p_bitshift, parser),
+        Some(PosToken {
+            token: Token::BitRight,
+            pos,
+        }) => bin_op!(BitwiseShiftRight, pos, expr, p_bitshift, parser),
         _ => Ok(expr),
     }
 }

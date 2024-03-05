@@ -55,7 +55,6 @@ impl std::fmt::Display for Ast {
 #[derive(Debug)]
 pub enum UnaryOperation {
     Negate,
-
     BooleanNot,
     BitwiseNot,
 }
@@ -89,6 +88,9 @@ pub enum BinaryOperation {
 #[derive(Debug)]
 #[deprecated]
 pub enum AssignmentOperation {}
+
+#[derive(Debug)]
+pub enum RawTyping {}
 
 #[derive(Clone, Debug)]
 pub enum Typing {

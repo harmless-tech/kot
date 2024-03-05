@@ -2,9 +2,10 @@ mod parse_item;
 mod parse_tree;
 
 use crate::{
-    data::{Ast, PosAst, PosToken, Token},
+    data::{Ast, Ident, PosAst, PosToken, RawTyping, Token},
     Pos,
 };
+use std::collections::{HashMap, HashSet};
 
 // TODO: Get rid of static?
 static EOF_TOKEN: PosToken = PosToken::eof(Pos::new(usize::MAX, usize::MAX));
@@ -14,6 +15,8 @@ static EOF_TOKEN: PosToken = PosToken::eof(Pos::new(usize::MAX, usize::MAX));
 struct Parser {
     tokens: Vec<PosToken>,
     index: usize,
+    // TODO: RawTyping should include possible types for type inference.
+    // emu_env: Vec<HashMap<Ident, RawTyping>>,
 }
 impl Parser {
     fn new(tokens: Vec<PosToken>) -> Self {
@@ -54,6 +57,8 @@ pub fn parse(tokens: Vec<PosToken>) -> anyhow::Result<PosAst> {
         Ast::Root(parse_tree::p_expression(&mut parser)?.into()),
         Pos::new(0, 0),
     );
+
+    dbg!(&root);
 
     match parser.peek() {
         Some(PosToken {
