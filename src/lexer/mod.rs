@@ -71,11 +71,6 @@ impl<'a> Lexer<'a> {
         item
     }
 
-    fn get_w_pos(&mut self) -> Option<(char, Pos)> {
-        let pos = self.current_pos();
-        self.get().map(|c| (c, pos))
-    }
-
     fn skip_i(&mut self, amount: usize) {
         for _ in 0..amount {
             let _ = self.get();

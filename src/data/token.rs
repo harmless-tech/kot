@@ -35,7 +35,7 @@ pub enum Token {
     Macro(),
 
     /// Number and radix
-    Number(String, usize),
+    Number(String, u32),
     #[deprecated(note = "Use 'Number' with radix.")]
     NumberDecimal(String),
     #[deprecated(note = "Use 'Number' with radix.")]
@@ -149,4 +149,10 @@ pub enum Token {
     BitXor,
     /// |
     BitOr,
+}
+impl Token {
+    #[must_use]
+    pub const fn is_number(&self) -> bool {
+        matches!(self, Self::Number(..))
+    }
 }

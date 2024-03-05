@@ -1,27 +1,88 @@
 use crate::{
-    data::{PosToken, Token},
+    data::{Ast, BinaryOperation, PosAst, PosToken, Token, WrappedValue},
     lexer::lex,
+    parser::parse,
     Pos,
 };
-use std::fs::read_to_string;
+use std::{fs::read_to_string, ops::Deref};
+
+macro_rules! assert_lexer {
+    ($t1:expr, $l1:ident) => {{
+        let t: &[PosToken] = &$t1;
+        let l = &$l1;
+
+        for (l, t) in l.iter().zip(t) {
+            assert_eq!(l, t);
+        }
+    }};
+}
 
 #[test]
 fn kot_1() {
     let str = read_to_string("./test/iter_1/1.kot").unwrap();
+    let lex = lex(&str).unwrap();
 
     assert_lexer!(
         [
             PosToken::new(Token::Number("1".to_string(), 10), Pos::new(1, 1)),
             PosToken::new(Token::MathAdd, Pos::new(1, 3)),
-            PosToken::new(Token::Number("1".to_string(), 10), Pos::new(1, 5)),
+            PosToken::new(Token::Number("2".to_string(), 10), Pos::new(1, 5)),
         ],
-        &str
+        lex
     );
+
+    let ast = parse(lex).unwrap();
+    if let PosAst {
+        ast: Ast::FakeGlobalBlock(a),
+        pos,
+    } = ast
+    {
+        assert_eq!(pos, Pos::new(0, 0));
+
+        if let PosAst {
+            ast: Ast::BinOp(BinaryOperation::Add, a1, a2),
+            pos,
+        } = *a
+        {
+            assert_eq!(pos, Pos::new(1, 3));
+
+            if let PosAst {
+                ast: Ast::Value(WrappedValue::Int64(int)),
+                pos,
+            } = *a1
+            {
+                assert_eq!(pos, Pos::new(1, 1));
+                assert_eq!(int, 1);
+            }
+            else {
+                panic!()
+            }
+
+            if let PosAst {
+                ast: Ast::Value(WrappedValue::Int64(int)),
+                pos,
+            } = *a2
+            {
+                assert_eq!(pos, Pos::new(1, 5));
+                assert_eq!(int, 2);
+            }
+            else {
+                panic!()
+            }
+        }
+        else {
+            panic!()
+        }
+    }
+    else {
+        panic!();
+    }
 }
 
 #[test]
 fn kot_2() {
     let str = read_to_string("./test/iter_1/2.kot").unwrap();
+    let lex = lex(&str).unwrap();
 
     assert_lexer!(
         [
@@ -30,13 +91,17 @@ fn kot_2() {
             PosToken::new(Token::MathAdd, Pos::new(1, 11)),
             PosToken::new(Token::Number("2".to_string(), 10), Pos::new(1, 12)),
             PosToken::new(Token::RParentheses, Pos::new(1, 13)),
-            PosToken::new(Token::MathDivide, Pos::new(1, 15)),
+            PosToken::new(Token::MathMultiply, Pos::new(1, 15)),
             PosToken::new(Token::Number("3".to_string(), 10), Pos::new(3, 9)),
             PosToken::new(Token::MathAdd, Pos::new(3, 11)),
             PosToken::new(Token::Number("10".to_string(), 10), Pos::new(3, 13)),
             PosToken::new(Token::MathMultiply, Pos::new(3, 16)),
             PosToken::new(Token::Number("70".to_string(), 10), Pos::new(3, 17)),
         ],
-        &str
+        lex
     );
+
+    let ast = parse(lex).unwrap();
+    println!(":::POSAST:::\n{ast}");
+    // TODO: Macro or something to test parser...
 }

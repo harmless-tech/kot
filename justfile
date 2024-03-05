@@ -11,6 +11,10 @@ mem:
     cargo build
     /usr/bin/time -l ./target/debug/kot
 
+memr:
+    cargo build --release
+    /usr/bin/time -l ./target/release/kot
+
 default_cargo_version := "stable"
 check CARGO=default_cargo_version:
     cargo +nightly fmt --check

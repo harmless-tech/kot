@@ -1,14 +1,18 @@
 #![allow(clippy::module_name_repetitions)]
+// TODO: Remove!!!
+#![allow(unused)]
+//
 
 pub mod data;
 pub mod lexer;
 
+mod parser;
 #[cfg(test)]
 mod test;
 
 // TODO: Library should be wasm compliant.
 
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub struct Pos {
     line: usize,
     col: usize,
