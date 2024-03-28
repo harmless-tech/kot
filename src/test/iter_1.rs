@@ -6,17 +6,6 @@ use crate::{
 };
 use std::{fs::read_to_string, ops::Deref};
 
-macro_rules! assert_lexer {
-    ($t1:expr, $l1:ident) => {{
-        let t: &[PosToken] = &$t1;
-        let l = &$l1;
-
-        for (l, t) in l.iter().zip(t) {
-            assert_eq!(l, t);
-        }
-    }};
-}
-
 #[test]
 fn kot_1() {
     let str = read_to_string("./test/iter_1/1.kot").unwrap();
@@ -24,9 +13,9 @@ fn kot_1() {
 
     assert_lexer!(
         [
-            PosToken::new(Token::Number("1".to_string(), 10), Pos::new(1, 1)),
+            PosToken::new(Token::NumberDecimal("1".to_string()), Pos::new(1, 1)),
             PosToken::new(Token::MathAdd, Pos::new(1, 3)),
-            PosToken::new(Token::Number("2".to_string(), 10), Pos::new(1, 5)),
+            PosToken::new(Token::NumberDecimal("2".to_string()), Pos::new(1, 5)),
         ],
         lex
     );
@@ -87,16 +76,16 @@ fn kot_2() {
     assert_lexer!(
         [
             PosToken::new(Token::LParentheses, Pos::new(1, 9)),
-            PosToken::new(Token::Number("1".to_string(), 10), Pos::new(1, 10)),
+            PosToken::new(Token::NumberDecimal("1".to_string()), Pos::new(1, 10)),
             PosToken::new(Token::MathAdd, Pos::new(1, 11)),
-            PosToken::new(Token::Number("2".to_string(), 10), Pos::new(1, 12)),
+            PosToken::new(Token::NumberDecimal("2".to_string()), Pos::new(1, 12)),
             PosToken::new(Token::RParentheses, Pos::new(1, 13)),
             PosToken::new(Token::MathMultiply, Pos::new(1, 15)),
-            PosToken::new(Token::Number("3".to_string(), 10), Pos::new(3, 9)),
+            PosToken::new(Token::NumberDecimal("3".to_string()), Pos::new(3, 9)),
             PosToken::new(Token::MathAdd, Pos::new(3, 11)),
-            PosToken::new(Token::Number("10".to_string(), 10), Pos::new(3, 13)),
+            PosToken::new(Token::NumberDecimal("10".to_string()), Pos::new(3, 13)),
             PosToken::new(Token::MathMultiply, Pos::new(3, 16)),
-            PosToken::new(Token::Number("70".to_string(), 10), Pos::new(3, 17)),
+            PosToken::new(Token::NumberDecimal("70".to_string()), Pos::new(3, 17)),
         ],
         lex
     );

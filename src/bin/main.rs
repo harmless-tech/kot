@@ -5,7 +5,7 @@ fn main() -> anyhow::Result<()> {
 
     // let string = std::fs::read_to_string("./test/iter_1/large.tmp")?;
 
-    let lex = kot::lex("1 + ------1000000")?;
+    let lex = kot::lex("1 +-1000000")?;
     let parse = kot::parse(lex)?;
 
     let mut int = kot::Interpreter::new(parse);

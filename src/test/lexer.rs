@@ -3,17 +3,6 @@ use crate::{
     Pos,
 };
 
-macro_rules! assert_lexer {
-    ($t1:expr, $l1:expr) => {{
-        let t: &[PosToken] = &$t1;
-        let l = lex($l1).unwrap();
-
-        for (l, t) in l.iter().zip(t) {
-            assert_eq!(l, t);
-        }
-    }};
-}
-
 #[test]
 fn test_dec_multi_period() {
     let lexer = lex(r"12.334.1");

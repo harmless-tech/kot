@@ -1,4 +1,4 @@
-use crate::Pos;
+use crate::{data::Ident, Pos};
 
 #[derive(Debug, Eq, PartialEq)]
 pub struct PosToken {
@@ -28,19 +28,19 @@ pub enum Token {
     DollarSign,
 
     /// Starts with [_ UnicodeLetter], then [_ - UnicodeLetter UnicodeDigit]
-    Ident(String),
+    Ident(Ident),
+    /// .
+    IdentSplit,
     /// #IDENT
-    Macro(),
+    Macro(Ident),
 
-    /// Number and radix
-    Number(String, u32),
-    #[deprecated(note = "Use 'Number' with radix.")]
+    /// 0..=9
     NumberDecimal(String),
-    #[deprecated(note = "Use 'Number' with radix.")]
+    /// 0x 0..=F
     NumberHex(String),
-    #[deprecated(note = "Use 'Number' with radix.")]
+    /// 0o 0..=8
     NumberOctal(String),
-    #[deprecated(note = "Use 'Number' with radix.")]
+    /// 0b 0..=1
     NumberBinary(String),
 
     Character(char),
@@ -75,9 +75,26 @@ pub enum Token {
     Const,
     /// let
     Let,
+    /// var
+    Var,
 
-    // as
+    /// as
     Cast,
+
+    /// if
+    If,
+    /// guard
+    Guard,
+    /// else
+    Else,
+
+    /// for
+    For,
+    /// while
+    While,
+
+    /// fn
+    Function,
 
     /// ..<
     RangeExclusive,
@@ -120,10 +137,6 @@ pub enum Token {
     /// -
     MathSubtract,
 
-    /// true
-    BoolTrue,
-    /// false
-    BoolFalse,
     /// !
     BoolNot,
     /// &&
@@ -162,6 +175,12 @@ pub enum Token {
 impl Token {
     #[must_use]
     pub const fn is_number(&self) -> bool {
-        matches!(self, Self::Number(..))
+        matches!(
+            self,
+            Self::NumberDecimal(..)
+                | Self::NumberHex(..)
+                | Self::NumberOctal(..)
+                | Self::NumberBinary(..)
+        )
     }
 }

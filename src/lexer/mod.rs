@@ -1,5 +1,5 @@
 use crate::{
-    data::{PosToken, Token},
+    data::{Ident, PosToken, Token},
     Pos,
 };
 use std::{collections::VecDeque, iter::Fuse, str::Chars};
@@ -128,6 +128,7 @@ impl PunchToken {
 pub enum LexerError {
     DecimalBadToken { c: char, pos: Pos },
     DecimalMoreThanOnePeriod { pos: Pos },
+    MacroBadIdent { c: char, pos: Pos },
 }
 impl std::fmt::Display for LexerError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -140,6 +141,9 @@ impl std::fmt::Display for LexerError {
                     f,
                     "Lexer: Could not lex decimal, more than one period at {pos}."
                 )
+            }
+            Self::MacroBadIdent { c, pos } => {
+                write!(f, "Lexer: Non _ or ascii character '{c}' at {pos}.")
             }
         }
     }
@@ -206,7 +210,6 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             ('^', _, _) => tokens.add1(lexer, Token::BitXor),
             ('|', _, _) => tokens.add1(lexer, Token::BitOr),
 
-            // TODO: Method Call (.method())
             ('(', _, _) => tokens.add1(lexer, Token::LParentheses),
             (')', _, _) => tokens.add1(lexer, Token::RParentheses),
             ('[', _, _) => tokens.add1(lexer, Token::LBracket),
@@ -216,7 +219,6 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
             (',', _, _) => tokens.add1(lexer, Token::Comma),
             (':', _, _) => tokens.add1(lexer, Token::Colon),
             (';', _, _) => tokens.add1(lexer, Token::SemiColon),
-            ('a', 's', whitespace!()) => tokens.add1(lexer, Token::Cast),
 
             ('0', 'x', _) => todo!(), // Hex
             ('0', 'o', _) => todo!(), // Octal
@@ -225,6 +227,10 @@ pub fn lex(contents: &str) -> anyhow::Result<Vec<PosToken>> {
 
             ('\'', _, _) => todo!(),                            // Char
             ('"', _, _) | ('#' | 'r', '"' | '#', _) => todo!(), // String
+
+            ('.', _, _) => tokens.add1(lexer, Token::IdentSplit), // Ident Split
+            ('#', _, _) => tokens.tokens.push(get_macro(lexer)?), // Macro
+            (c, _, _) if c == '_' || c.is_alphabetic() => tokens.tokens.push(get_ident(lexer)?), // Ident or Letter only token
 
             // ('', _, _) => tokens.add1(lexer, Token::),
             (whitespace!(), _, _) => lexer.skip_i(1),
@@ -287,5 +293,73 @@ fn get_decimal(lexer: &mut Lexer) -> anyhow::Result<PosToken> {
         unreachable!();
     }
 
-    Ok(PosToken::new(Token::Number(builder, 10), pos))
+    Ok(PosToken::new(Token::NumberDecimal(builder), pos))
+}
+
+fn get_macro(lexer: &mut Lexer) -> anyhow::Result<PosToken> {
+    let pos = lexer.current_pos();
+    let mut builder = String::new();
+
+    while lexer.within() {
+        let c = map_opt_char(lexer.peek().as_ref());
+        if c == '_' || (c.is_ascii_alphabetic() && c.is_ascii_lowercase()) {
+            builder.push(c);
+            lexer.skip_i(1);
+        }
+        else if c.is_alphanumeric() {
+            return Err(LexerError::MacroBadIdent { c, pos }.into());
+        }
+        else {
+            break;
+        }
+    }
+
+    if builder.is_empty() {
+        unreachable!();
+    }
+
+    Ok(PosToken::new(Token::Ident(builder), pos))
+}
+
+fn get_ident(lexer: &mut Lexer) -> anyhow::Result<PosToken> {
+    let pos = lexer.current_pos();
+    let mut builder = String::new();
+
+    while lexer.within() {
+        let c = map_opt_char(lexer.peek().as_ref());
+        if c == '_' || c.is_alphanumeric() {
+            builder.push(c);
+            lexer.skip_i(1);
+        }
+        else {
+            break;
+        }
+    }
+
+    if builder.is_empty() {
+        unreachable!();
+    }
+
+    macro_rules! tk {
+        ($x:ident) => {{
+            Ok(PosToken::new(Token::$x, pos))
+        }};
+    }
+
+    // Letter tokens
+    match builder.as_str() {
+        "true" => tk!(True),
+        "false" => tk!(False),
+        "const" => tk!(Const),
+        "let" => tk!(Let),
+        "var" => tk!(Var),
+        "as" => tk!(Cast),
+        "if" => tk!(If),
+        "guard" => tk!(Guard),
+        "else" => tk!(Else),
+        "for" => tk!(For),
+        "while" => tk!(While),
+        "fn" => tk!(Function),
+        _ => Ok(PosToken::new(Token::Ident(builder), pos)),
+    }
 }

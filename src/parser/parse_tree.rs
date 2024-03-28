@@ -213,15 +213,6 @@ fn p_unary(parser: &mut Parser) -> anyhow::Result<PosAst> {
 fn p_primary(parser: &mut Parser) -> anyhow::Result<PosAst> {
     match parser.peek() {
         Some(PosToken {
-            token: Token::Number(num, radix),
-            pos,
-        }) => {
-            let wrapped = parse_number(num, *radix)?;
-            let ret = PosAst::new(Ast::Value(wrapped), *pos);
-            parser.skip();
-            Ok(ret)
-        }
-        Some(PosToken {
             token: Token::Ident(id),
             ..
         }) => todo!(),
@@ -241,6 +232,12 @@ fn p_primary(parser: &mut Parser) -> anyhow::Result<PosAst> {
                 }
                 item => panic!("Invalid token: {item:?}"),
             }
+        }
+        Some(PosToken { token, pos }) if token.is_number() => {
+            let wrapped = parse_number(token)?;
+            let ret = PosAst::new(Ast::Value(wrapped), *pos);
+            parser.skip();
+            Ok(ret)
         }
         item => panic!("Bad data!!! {item:?}"),
     }
