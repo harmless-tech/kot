@@ -1,0 +1,77 @@
+[package]
+name = "kot"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "A programming language"
+readme = "README.md"
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+#include = []
+
+[[bin]]
+name = "kot"
+path = "src/bin/main.rs"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = { workspace = true }
+const-hex = {workspace = true}
+mimalloc = { workspace = true, optional = true }
+
+[dev-dependencies]
+
+[features]
+default = []
+mimalloc = ["dep:mimalloc"]
+
+[profile.dev]
+panic = "abort"
+
+[profile.test]
+panic = "abort"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+debug = false
+strip = true
+panic = "abort"
+
+[profile.small]
+inherits = "release"
+opt-level = "s"
+
+[lints]
+workspace = true
+
+[workspace]
+resolver = '2'
+members = ["crates/std"]
+
+[workspace.package]
+version = "0.0.1-dev.0"
+edition = "2024"
+authors = ["harmless-tech"]
+license = "MPL-2"
+repository = "https://github.com/harmless-tech/kot"
+rust-version = "1.91.0"
+
+[workspace.dependencies]
+anyhow = { version = "1.0.99", features = ["backtrace"] }
+const-hex = { version = "1.15.0", features = ["nightly", "portable-simd"] }
+mimalloc = { version = "0.1.47" }
+
+[workspace.lints.clippy]
+#cargo = "deny"
+correctness = "deny"
+complexity = "deny"
+nursery = "deny"
+pedantic = "deny"
+perf = "deny"
+style = "deny"
+suspicious = "deny"
